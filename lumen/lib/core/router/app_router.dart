@@ -7,6 +7,7 @@ import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/library/presentation/screens/home_shell.dart';
 import '../../features/library/presentation/screens/library_screen.dart';
 import '../../features/library/presentation/screens/search_screen.dart';
+import '../../features/reader/presentation/screens/ocr_review_screen.dart';
 import '../../features/reader/presentation/screens/reader_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/statistics/presentation/screens/statistics_screen.dart';
@@ -75,6 +76,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.search,
         name: Routes.nSearch,
         builder: (_, __) => const SearchScreen(),
+      ),
+      GoRoute(
+        path: Routes.ocr,
+        name: Routes.nOcr,
+        builder: (_, state) =>
+            OcrReviewScreen(bookId: state.pathParameters['bookId']!),
       ),
     ],
   );

@@ -16,6 +16,10 @@ abstract final class Routes {
   static const String reader = '/reader/:bookId';
   static String readerPath(String bookId) => '/reader/$bookId';
 
+  /// OCR review for a scanned book: `/ocr/:bookId`.
+  static const String ocr = '/ocr/:bookId';
+  static String ocrPath(String bookId) => '/ocr/$bookId';
+
   static const String search = '/search';
   static const String lock = '/lock';
 
@@ -27,6 +31,7 @@ abstract final class Routes {
   static const String nStatistics = 'statistics';
   static const String nSettings = 'settings';
   static const String nReader = 'reader';
+  static const String nOcr = 'ocr';
   static const String nSearch = 'search';
   static const String nLock = 'lock';
 }

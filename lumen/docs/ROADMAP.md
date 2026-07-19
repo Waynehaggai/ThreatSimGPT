@@ -126,8 +126,19 @@ Status legend: ✅ done in the foundation · 🟡 partially scaffolded · ⬜ pl
 - ⬜ Auto‑scroll to the spoken sentence; premium AI voices behind `TtsService`
 
 ### M8 — OCR
-- ⬜ ML Kit `OcrService`: detect image‑only PDFs, run OCR → Smart content,
-  user correction UI
+- ✅ `MlKitOcrService` (`OcrService`): image‑only PDF detection (pdfrx text
+  probe), per‑page rasterize → ML Kit recognition, **streamed** page results
+- ✅ `buildOcrContent` (pure + tested): OCR pages → reflowable `BookContent`
+  (paragraphs, page breaks, absolute offsets) + low‑confidence page flagging
+- ✅ `OcrRunController` (unit‑tested with a fake engine): runs recognition,
+  tracks page progress, aggregates results, builds content
+- ✅ OCR review screen: live progress, per‑page **editable correction**, save →
+  content becomes readable in Smart Mode and clears `needsOcr`
+- ✅ Reader integration: scanned books show a "Run OCR" banner; `readerContent`
+  prefers the OCR (corrected) content and now loads real EPUB/PDF/DOCX content
+- 🟡 ML Kit + pdfrx rasterization are native — verified on device; the
+  content‑builder and controller logic are covered by the pure‑Dart suite
+- ⬜ Persist OCR content to Isar across sessions (currently session‑cached)
 
 ### M9 — Statistics & goals
 - ⬜ Session tracking → streaks, hours, pages, productive hours, genres

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/routes.dart';
 import '../../../../core/theme/reading_theme.dart';
 import '../../../../domain/entities/annotation.dart';
 import '../../../../domain/entities/book.dart';
@@ -12,6 +13,7 @@ import '../../../../domain/usecases/reader_usecases.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../../domain/services/tts_service.dart';
 import '../providers/annotation_providers.dart';
+import '../providers/ocr_providers.dart';
 import '../providers/reader_providers.dart';
 import '../providers/tts_controller.dart';
 import '../providers/tts_providers.dart';
@@ -167,6 +169,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final palette = ReadingPalette.of(settings.theme);
     final annotations =
         ref.watch(annotationsProvider(widget.bookId)).valueOrNull ?? const [];
+    final hasOcrContent =
+        ref.watch(ocrContentProvider(widget.bookId)) != null;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: palette.isDark
@@ -205,6 +209,17 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                         ),
                       ),
                     ),
+                    if (book.needsOcr && !hasOcrContent && !ui.immersive)
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 88, left: 16, right: 16),
+                          child: _OcrBanner(
+                            onRun: () =>
+                                context.push(Routes.ocrPath(widget.bookId)),
+                          ),
+                        ),
+                      ),
                     AnimatedSlide(
                       duration: const Duration(milliseconds: 220),
                       offset: ui.immersive ? const Offset(0, -1) : Offset.zero,
@@ -608,6 +623,38 @@ class _BottomBar extends ConsumerWidget {
       currentChapterId: currentChapterId,
     );
     if (target != null) onJump(target);
+  }
+}
+
+/// Prompt shown over a scanned (image-only) book offering to run OCR.
+class _OcrBanner extends StatelessWidget {
+  const _OcrBanner({required this.onRun});
+  final VoidCallback onRun;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      color: theme.colorScheme.secondaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+        child: Row(
+          children: [
+            const Icon(Icons.document_scanner_outlined),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'This looks like a scanned document. Run OCR to read it in '
+                'Smart Mode.',
+                style: theme.textTheme.bodySmall,
+              ),
+            ),
+            const SizedBox(width: 8),
+            FilledButton(onPressed: onRun, child: const Text('Run OCR')),
+          ],
+        ),
+      ),
+    );
   }
 }
 

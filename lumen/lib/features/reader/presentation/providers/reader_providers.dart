@@ -14,6 +14,7 @@ import '../../../../domain/repositories/library_repository.dart';
 import '../../../../domain/repositories/progress_repository.dart';
 import '../../../../domain/usecases/reader_usecases.dart';
 import '../../../library/presentation/providers/library_providers.dart';
+import 'ocr_providers.dart';
 import 'sample_content.dart';
 
 /// A stable-per-install device id, driving the cross-device resume prompt.
@@ -33,19 +34,32 @@ final readerBookProvider = FutureProvider.family<Book, String>((ref, id) async {
 
 /// Loads reflowable Smart content for a book.
 ///
-/// If the book is a real `.txt` file on disk it is parsed for a genuine reading
-/// experience; otherwise a rich sample document is returned so the reader is
-/// demonstrable before the M2 import pipeline lands.
+/// Resolution order:
+///   1. OCR-generated/corrected content for this session (scanned PDFs);
+///   2. parse the real file for any Smart-capable format with extractable text;
+///   3. a rich sample document (demo / not-yet-imported books).
+///
+/// Books flagged `needsOcr` skip step 2 (there is no text layer) and show the
+/// sample until the user runs OCR from the reader.
 final readerContentProvider =
     FutureProvider.family<BookContent, String>((ref, bookId) async {
   final book = await ref.watch(readerBookProvider(bookId).future);
-  final parser = ref.watch(documentParsingServiceProvider);
 
-  if (book.format == BookFormat.txt && File(book.filePath).existsSync()) {
-    final result = await parser.buildSmartContent(book);
+  // 1. Session OCR cache wins.
+  final ocr = ref.watch(ocrContentProvider(bookId));
+  if (ocr != null) return ocr;
+
+  // 2. Parse the real file when it has an extractable text layer.
+  if (!book.needsOcr &&
+      book.format.supportsSmartMode &&
+      File(book.filePath).existsSync()) {
+    final result =
+        await ref.watch(documentParsingServiceProvider).buildSmartContent(book);
     final content = result.valueOrNull;
-    if (content != null) return content;
+    if (content != null && content.chapters.isNotEmpty) return content;
   }
+
+  // 3. Fallback sample.
   return sampleBookContent(book.id, book.title);
 });
 
