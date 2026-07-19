@@ -25,7 +25,7 @@ class LibraryScreen extends ConsumerWidget {
           IconButton(
             tooltip: 'Search',
             icon: const Icon(Icons.search_rounded),
-            onPressed: () {}, // wired to SearchScreen (see roadmap)
+            onPressed: () => context.push(Routes.search),
           ),
           IconButton(
             tooltip: layout == LibraryLayout.grid ? 'List view' : 'Grid view',

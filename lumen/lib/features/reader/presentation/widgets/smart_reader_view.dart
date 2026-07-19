@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../domain/entities/annotation.dart';
 import '../../../../domain/entities/book_content.dart';
 import '../../../../domain/entities/enums.dart';
 import '../rendering/block_renderer.dart';
@@ -13,6 +14,19 @@ typedef PositionChanged = void Function({
   required int charOffset,
   String? chapterId,
 });
+
+/// Annotations overlapping a block's [start, start+len) character range.
+List<Annotation> annotationsForBlock(List<Annotation> all, ContentBlock block) {
+  if (all.isEmpty) return const [];
+  final start = block.charOffset;
+  final end = start + (block.text?.length ?? 0);
+  return all.where((a) {
+    final s = a.startOffset;
+    final e = a.endOffset;
+    if (s == null || e == null) return false;
+    return s < end && e > start; // ranges overlap
+  }).toList();
+}
 
 /// Renders Smart Reading Mode content responsively.
 ///
@@ -28,6 +42,8 @@ class SmartReaderView extends StatefulWidget {
     required this.navigation,
     required this.initialPercent,
     required this.onPosition,
+    this.annotations = const [],
+    this.onSelect,
     super.key,
   });
 
@@ -36,6 +52,12 @@ class SmartReaderView extends StatefulWidget {
   final PageNavigation navigation;
   final double initialPercent;
   final PositionChanged onPosition;
+
+  /// Existing highlights/underlines to paint over the text.
+  final List<Annotation> annotations;
+
+  /// Fired when the user selects text (absolute offsets + the selected string).
+  final BlockSelected? onSelect;
 
   @override
   State<SmartReaderView> createState() => _SmartReaderViewState();
@@ -85,6 +107,8 @@ class _SmartReaderViewState extends State<SmartReaderView> {
     return _ContinuousScroll(
       blocks: _blocks,
       typography: widget.typography,
+      annotations: widget.annotations,
+      onSelect: widget.onSelect,
       initialPercent: widget.initialPercent,
       onPercent: (percent) => widget.onPosition(
         percent: percent,
@@ -117,6 +141,8 @@ class _SmartReaderViewState extends State<SmartReaderView> {
           blocks: _blocks,
           ranges: ranges,
           typography: widget.typography,
+          annotations: widget.annotations,
+          onSelect: widget.onSelect,
           margin: margin,
           initialPercent: widget.initialPercent,
           onPercent: (percent) => widget.onPosition(
@@ -136,6 +162,8 @@ class _PaginatedScroll extends StatefulWidget {
     required this.blocks,
     required this.ranges,
     required this.typography,
+    required this.annotations,
+    required this.onSelect,
     required this.margin,
     required this.initialPercent,
     required this.onPercent,
@@ -145,6 +173,8 @@ class _PaginatedScroll extends StatefulWidget {
   final List<ContentBlock> blocks;
   final List<PageRange> ranges;
   final ReaderTypography typography;
+  final List<Annotation> annotations;
+  final BlockSelected? onSelect;
   final double margin;
   final double initialPercent;
   final ValueChanged<double> onPercent;
@@ -187,7 +217,13 @@ class _PaginatedScrollState extends State<_PaginatedScroll> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               for (var i = range.start; i < range.end; i++) ...[
-                renderBlock(widget.blocks[i], widget.typography),
+                BlockView(
+                  block: widget.blocks[i],
+                  typography: widget.typography,
+                  annotations:
+                      annotationsForBlock(widget.annotations, widget.blocks[i]),
+                  onSelect: widget.onSelect,
+                ),
                 SizedBox(height: widget.typography.blockSpacing),
               ],
             ],
@@ -203,12 +239,16 @@ class _ContinuousScroll extends StatefulWidget {
   const _ContinuousScroll({
     required this.blocks,
     required this.typography,
+    required this.annotations,
+    required this.onSelect,
     required this.initialPercent,
     required this.onPercent,
   });
 
   final List<ContentBlock> blocks;
   final ReaderTypography typography;
+  final List<Annotation> annotations;
+  final BlockSelected? onSelect;
   final double initialPercent;
   final ValueChanged<double> onPercent;
 
@@ -259,7 +299,12 @@ class _ContinuousScrollState extends State<_ContinuousScroll> {
       itemCount: widget.blocks.length,
       itemBuilder: (context, i) => Padding(
         padding: EdgeInsets.only(bottom: widget.typography.blockSpacing),
-        child: renderBlock(widget.blocks[i], widget.typography),
+        child: BlockView(
+          block: widget.blocks[i],
+          typography: widget.typography,
+          annotations: annotationsForBlock(widget.annotations, widget.blocks[i]),
+          onSelect: widget.onSelect,
+        ),
       ),
     );
   }

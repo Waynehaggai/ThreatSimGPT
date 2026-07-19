@@ -4,16 +4,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/reading_theme.dart';
+import '../../../../domain/entities/annotation.dart';
 import '../../../../domain/entities/book.dart';
 import '../../../../domain/entities/book_content.dart';
 import '../../../../domain/entities/enums.dart';
 import '../../../../domain/usecases/reader_usecases.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
+import '../providers/annotation_providers.dart';
 import '../providers/reader_providers.dart';
 import '../rendering/reader_typography.dart';
+import '../widgets/bookmarks_sheet.dart';
 import '../widgets/original_reader_view.dart';
+import '../widgets/selection_toolbar.dart';
 import '../widgets/smart_reader_view.dart';
 import '../widgets/table_of_contents_sheet.dart';
+
+/// A pending text selection awaiting an annotation action.
+typedef _PendingSelection = ({int start, int end, String text});
 
 /// The reading surface: immersive, tap-to-reveal controls, an Original/Smart
 /// mode switch, a themed page, TOC, and live progress + remaining-time.
@@ -31,12 +38,60 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   /// point and re-lays the view out at that fraction.
   double? _jumpPercent;
 
+  /// The current text selection awaiting a highlight/note action.
+  _PendingSelection? _pending;
+
+  void _clearSelection() => setState(() => _pending = null);
+
+  Future<void> _applyHighlight({
+    int? color,
+    AnnotationType type = AnnotationType.highlight,
+  }) async {
+    final sel = _pending;
+    if (sel == null) return;
+    await ref.read(annotationControllerProvider(widget.bookId)).addHighlight(
+          start: sel.start,
+          end: sel.end,
+          text: sel.text,
+          colorValue: color,
+          type: type,
+        );
+    _clearSelection();
+  }
+
+  Future<void> _copySelection() async {
+    final sel = _pending;
+    if (sel == null) return;
+    await Clipboard.setData(ClipboardData(text: sel.text));
+    _clearSelection();
+  }
+
+  Future<void> _addNote() async {
+    final sel = _pending;
+    if (sel == null) return;
+    final note = await showDialog<String>(
+      context: context,
+      builder: (ctx) => _NoteDialog(selectedText: sel.text),
+    );
+    if (note != null && note.trim().isNotEmpty) {
+      await ref.read(annotationControllerProvider(widget.bookId)).addNote(
+            start: sel.start,
+            end: sel.end,
+            selectedText: sel.text,
+            noteText: note.trim(),
+          );
+    }
+    _clearSelection();
+  }
+
   @override
   Widget build(BuildContext context) {
     final bookAsync = ref.watch(readerBookProvider(widget.bookId));
     final ui = ref.watch(readerControllerProvider(widget.bookId));
     final settings = ref.watch(settingsProvider);
     final palette = ReadingPalette.of(settings.theme);
+    final annotations =
+        ref.watch(annotationsProvider(widget.bookId)).valueOrNull ?? const [];
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: palette.isDark
@@ -61,25 +116,53 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                     mode: ui.mode,
                     palette: palette,
                     jumpPercent: _jumpPercent,
+                    annotations: annotations,
+                    onSelect: (start, end, text) =>
+                        setState(() => _pending = (start: start, end: end, text: text)),
                   ),
                 ),
               ),
               AnimatedSlide(
                 duration: const Duration(milliseconds: 220),
                 offset: ui.immersive ? const Offset(0, -1) : Offset.zero,
-                child: _TopBar(book: book, palette: palette),
+                child: _TopBar(
+                  bookId: widget.bookId,
+                  book: book,
+                  palette: palette,
+                  onJump: (percent) => setState(() => _jumpPercent = percent),
+                ),
               ),
               Align(
                 alignment: Alignment.bottomCenter,
-                child: AnimatedSlide(
-                  duration: const Duration(milliseconds: 220),
-                  offset: ui.immersive ? const Offset(0, 1) : Offset.zero,
-                  child: _BottomBar(
-                    bookId: widget.bookId,
-                    book: book,
-                    palette: palette,
-                    onJump: (percent) => setState(() => _jumpPercent = percent),
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_pending != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: SelectionToolbar(
+                          onHighlight: (color) {
+                            _applyHighlight(color: color);
+                          },
+                          onUnderline: () =>
+                              _applyHighlight(type: AnnotationType.underline),
+                          onNote: _addNote,
+                          onCopy: _copySelection,
+                          onDismiss: _clearSelection,
+                        ),
+                      ),
+                    AnimatedSlide(
+                      duration: const Duration(milliseconds: 220),
+                      offset: ui.immersive ? const Offset(0, 1) : Offset.zero,
+                      child: _BottomBar(
+                        bookId: widget.bookId,
+                        book: book,
+                        palette: palette,
+                        onJump: (percent) =>
+                            setState(() => _jumpPercent = percent),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -98,6 +181,8 @@ class _ReaderSurface extends ConsumerWidget {
     required this.mode,
     required this.palette,
     required this.jumpPercent,
+    required this.annotations,
+    required this.onSelect,
   });
 
   final String bookId;
@@ -105,6 +190,8 @@ class _ReaderSurface extends ConsumerWidget {
   final ReadingMode mode;
   final ReadingPalette palette;
   final double? jumpPercent;
+  final List<Annotation> annotations;
+  final void Function(int start, int end, String text) onSelect;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -137,6 +224,8 @@ class _ReaderSurface extends ConsumerWidget {
         typography: ReaderTypography(settings, palette),
         navigation: settings.pageNavigation,
         initialPercent: initialPercent,
+        annotations: annotations,
+        onSelect: onSelect,
         onPosition: ({required percent, required charOffset, chapterId}) =>
             controller.onPositionChanged(
           percent: percent,
@@ -148,13 +237,24 @@ class _ReaderSurface extends ConsumerWidget {
   }
 }
 
-class _TopBar extends StatelessWidget {
-  const _TopBar({required this.book, required this.palette});
+class _TopBar extends ConsumerWidget {
+  const _TopBar({
+    required this.bookId,
+    required this.book,
+    required this.palette,
+    required this.onJump,
+  });
+
+  final String bookId;
   final Book book;
   final ReadingPalette palette;
+  final ValueChanged<double> onJump;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ui = ref.watch(readerControllerProvider(bookId));
+    final controller = ref.read(annotationControllerProvider(bookId));
+
     return Material(
       color: palette.background.withValues(alpha: 0.96),
       child: SafeArea(
@@ -175,16 +275,137 @@ class _TopBar extends StatelessWidget {
               ),
             ),
             IconButton(
-              icon: Icon(Icons.bookmark_border_rounded, color: palette.text),
-              onPressed: () {}, // add bookmark — AnnotationRepository (M4)
+              tooltip: 'Add bookmark',
+              icon: Icon(Icons.bookmark_add_outlined, color: palette.text),
+              onPressed: () async {
+                await controller.addBookmark(
+                  percent: ui.percent,
+                  charOffset: ui.charOffset,
+                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Bookmark added')),
+                  );
+                }
+              },
             ),
             IconButton(
-              icon: Icon(Icons.headphones_rounded, color: palette.text),
-              onPressed: () {}, // start TTS (M7)
+              tooltip: 'Bookmarks',
+              icon: Icon(Icons.bookmarks_outlined, color: palette.text),
+              onPressed: () => _openBookmarks(context, ref),
+            ),
+            PopupMenuButton<String>(
+              iconColor: palette.text,
+              onSelected: (value) {
+                if (value == 'export') _exportNotes(context, controller);
+              },
+              itemBuilder: (_) => const [
+                PopupMenuItem(value: 'export', child: Text('Export notes')),
+              ],
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _openBookmarks(BuildContext context, WidgetRef ref) async {
+    final bookmarks =
+        ref.read(bookmarksProvider(bookId)).valueOrNull ?? const [];
+    final action = await BookmarksSheet.show(context, bookmarks: bookmarks);
+    final controller = ref.read(annotationControllerProvider(bookId));
+    switch (action) {
+      case DeleteBookmark(:final bookmark):
+        await controller.deleteBookmark(bookmark.id);
+      case JumpToBookmark(:final bookmark):
+        final percent = bookmark.percent;
+        if (percent != null) onJump(percent);
+      case null:
+        break;
+    }
+  }
+
+  Future<void> _exportNotes(
+    BuildContext context,
+    AnnotationController controller,
+  ) async {
+    final markdown = await controller.exportNotes();
+    if (!context.mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Exported notes'),
+        content: SingleChildScrollView(child: SelectableText(markdown)),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: markdown));
+              if (ctx.mounted) Navigator.of(ctx).pop();
+            },
+            child: const Text('Copy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Simple dialog to capture a note's text for the current selection.
+class _NoteDialog extends StatefulWidget {
+  const _NoteDialog({required this.selectedText});
+  final String selectedText;
+
+  @override
+  State<_NoteDialog> createState() => _NoteDialogState();
+}
+
+class _NoteDialogState extends State<_NoteDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Add note'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '“${widget.selectedText}”',
+            style: Theme.of(context).textTheme.bodySmall,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _controller,
+            autofocus: true,
+            minLines: 2,
+            maxLines: 5,
+            decoration: const InputDecoration(hintText: 'Your note…'),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text),
+          child: const Text('Save'),
+        ),
+      ],
     );
   }
 }

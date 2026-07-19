@@ -64,9 +64,18 @@ Status legend: ✅ done in the foundation · 🟡 partially scaffolded · ⬜ pl
 - ⬜ In‑text search + highlight anchoring hookup (lands with M4)
 
 ### M4 — Annotations, bookmarks, notes, search
-- ⬜ Selection toolbar: highlight/underline colors, sticky & free‑text notes
-- ⬜ Bookmarks (rename/organize/jump), notes export
-- ⬜ Full‑text search: library, in‑book, highlights, notes, authors, collections
+- ✅ Selection toolbar: highlight colours, underline, note, copy — anchored to
+  absolute char offsets so annotations survive reflow
+- ✅ Highlight/underline rendering over reflowed text (`buildAnnotatedSpan`,
+  tested) painted by `BlockView` (selectable `SelectableText.rich`)
+- ✅ Free‑text notes on a selection (note dialog); notes export to Markdown
+- ✅ Bookmarks: add at current position, list sheet, jump, swipe‑to‑delete
+- ✅ Reactive annotation/bookmark providers over `AnnotationRepository`
+  (in‑memory default + Isar in production)
+- ✅ Global search screen across books (title/author) and highlights/notes,
+  wired from the library app bar
+- 🟡 In‑book find‑in‑text and rename/organize bookmarks — follow‑ups
+- ⬜ Cross‑paragraph selection (SelectableText spans a single block today)
 
 ### M5 — Security & accessibility
 - ⬜ `SecurityService`: biometric/PIN app lock, auto‑lock after inactivity

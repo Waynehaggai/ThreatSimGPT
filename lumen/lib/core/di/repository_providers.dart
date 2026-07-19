@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/parsers/document_parsing_service_impl.dart';
 import '../../data/parsers/plain_text_parser.dart';
+import '../../data/repositories/in_memory_annotation_repository.dart';
 import '../../data/repositories/in_memory_progress_repository.dart';
 import '../../domain/repositories/annotation_repository.dart';
 import '../../domain/repositories/progress_repository.dart';
@@ -26,8 +27,10 @@ Never _mustOverride(String name) => throw UnimplementedError(
 final securityServiceProvider = Provider<SecurityService>(
     (ref) => _mustOverride('securityServiceProvider'));
 
-final annotationRepositoryProvider = Provider<AnnotationRepository>(
-    (ref) => _mustOverride('annotationRepositoryProvider'));
+/// Defaults to an in‑memory implementation so highlights/notes/bookmarks work
+/// out of the box; the bootstrap overrides it with `IsarAnnotationRepository`.
+final annotationRepositoryProvider =
+    Provider<AnnotationRepository>((ref) => InMemoryAnnotationRepository());
 
 /// Defaults to an in‑memory implementation so reader resume/position tracking
 /// works out of the box; the bootstrap overrides it with `IsarProgressRepository`.
