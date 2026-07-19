@@ -9,6 +9,7 @@ import '../../data/repositories/in_memory_annotation_repository.dart';
 import '../../data/repositories/in_memory_progress_repository.dart';
 import '../../data/repositories/in_memory_statistics_repository.dart';
 import '../../data/services/file_import_service.dart';
+import '../../data/services/secure_security_service.dart';
 import '../../data/sync/noop_sync_repository.dart';
 import '../../domain/entities/reading_stats.dart';
 import '../../domain/repositories/annotation_repository.dart';
@@ -34,8 +35,10 @@ Never _mustOverride(String name) => throw UnimplementedError(
       'main.dart (see core/di/bootstrap.dart).',
     );
 
-final securityServiceProvider = Provider<SecurityService>(
-    (ref) => _mustOverride('securityServiceProvider'));
+/// Defaults to the platform-secure implementation (biometric/PIN + secure key
+/// storage); the bootstrap provides an already-`init()`-ed instance.
+final securityServiceProvider =
+    Provider<SecurityService>((ref) => SecureSecurityService());
 
 /// Defaults to an in‑memory implementation so highlights/notes/bookmarks work
 /// out of the box; the bootstrap overrides it with `IsarAnnotationRepository`.

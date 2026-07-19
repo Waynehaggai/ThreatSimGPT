@@ -86,9 +86,17 @@ Status legend: ✅ done in the foundation · 🟡 partially scaffolded · ⬜ pl
 - ⬜ Cross‑paragraph selection (SelectableText spans a single block today)
 
 ### M5 — Security & accessibility
-- ⬜ `SecurityService`: biometric/PIN app lock, auto‑lock after inactivity
-- ⬜ Screen‑reader semantics, large fonts, high contrast, OpenDyslexic,
-  one‑handed / left‑handed layouts, voice navigation
+- ✅ App lock: `AppLockController` + `LockScreen` (biometric / PIN), auto‑lock
+  after inactivity via a lifecycle observer (`_LockGate` wraps every page)
+- ✅ `shouldAutoLock` timing rule + controller logic **unit‑tested** with a fake
+  `SecurityService` (biometric success, PIN verify, grace period)
+- ✅ Configure app lock from Settings (biometric / PIN / off; PIN entry)
+- ✅ Accessibility: OpenDyslexic toggle, text‑size slider, screen‑reader
+  semantics on book tiles (tooltips elsewhere provide labels)
+- 🟡 Biometric/secure‑storage are native — verified on device; the lock state
+  machine is covered by the pure‑Dart suite
+- ⬜ High‑contrast theme, one‑handed / left‑handed layouts, voice navigation;
+  bundle the OpenDyslexic/Bookerly font assets
 
 ### M6 — Cloud sync (Firebase)
 - ✅ `SyncEngine` (`SyncRepository`): drains the durable queue → remote with

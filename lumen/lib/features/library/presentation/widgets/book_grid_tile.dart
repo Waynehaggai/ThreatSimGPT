@@ -15,10 +15,15 @@ class BookGridTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Column(
+    final progress = (book.progressPercent * 100).round();
+    return Semantics(
+      button: true,
+      label: '${book.title} by ${book.author}. '
+          '${book.progressPercent > 0 ? '$progress% read.' : 'Not started.'}',
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
@@ -53,6 +58,7 @@ class BookGridTile extends StatelessWidget {
             ),
           ],
         ],
+        ),
       ),
     );
   }

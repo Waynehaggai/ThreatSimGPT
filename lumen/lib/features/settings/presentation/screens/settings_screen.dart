@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/di/repository_providers.dart';
 import '../../../../domain/entities/enums.dart';
 import '../../../../domain/repositories/sync_repository.dart';
+import '../../../../domain/services/security_service.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../security/presentation/providers/app_lock_providers.dart';
 import '../providers/settings_providers.dart';
 
 /// Top-level settings: account, default reading mode, theme, sync, security.
@@ -100,10 +102,103 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
           _sectionHeader(context, 'Security'),
-          const ListTile(
-            leading: Icon(Icons.lock_outline_rounded),
-            title: Text('App lock'),
-            subtitle: Text('Fingerprint, Face ID or PIN — see roadmap M5'),
+          ListTile(
+            leading: const Icon(Icons.lock_outline_rounded),
+            title: const Text('App lock'),
+            subtitle: Text(switch (ref.watch(appLockControllerProvider).state.value.method) {
+              AppLockMethod.biometric => 'Fingerprint / Face ID',
+              AppLockMethod.pin => 'PIN',
+              AppLockMethod.none => 'Off',
+            }),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => _configureLock(context, ref),
+          ),
+          _sectionHeader(context, 'Accessibility'),
+          SwitchListTile(
+            secondary: const Icon(Icons.accessibility_new_rounded),
+            title: const Text('OpenDyslexic font'),
+            subtitle: const Text('A typeface designed for easier reading'),
+            value: settings.fontFamily == 'OpenDyslexic',
+            onChanged: (on) => ref.read(settingsProvider.notifier).update(
+                  (x) => x.copyWith(
+                      fontFamily: on ? 'OpenDyslexic' : 'Merriweather'),
+                ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.format_size_rounded),
+            title: const Text('Text size'),
+            subtitle: Slider(
+              value: settings.fontSizeSp,
+              min: 12,
+              max: 32,
+              divisions: 20,
+              label: '${settings.fontSizeSp.round()}',
+              onChanged: (v) => ref
+                  .read(settingsProvider.notifier)
+                  .update((x) => x.copyWith(fontSizeSp: v)),
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _configureLock(BuildContext context, WidgetRef ref) async {
+    final controller = ref.read(appLockControllerProvider);
+    final choice = await showModalBottomSheet<AppLockMethod>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.fingerprint_rounded),
+            title: const Text('Biometric (Face ID / fingerprint)'),
+            onTap: () => Navigator.pop(ctx, AppLockMethod.biometric),
+          ),
+          ListTile(
+            leading: const Icon(Icons.pin_rounded),
+            title: const Text('PIN'),
+            onTap: () => Navigator.pop(ctx, AppLockMethod.pin),
+          ),
+          ListTile(
+            leading: const Icon(Icons.lock_open_rounded),
+            title: const Text('Off'),
+            onTap: () => Navigator.pop(ctx, AppLockMethod.none),
+          ),
+        ],
+      ),
+    );
+    if (choice == null) return;
+    if (choice == AppLockMethod.pin) {
+      final pin = await _promptPin(context);
+      if (pin == null) return;
+      await controller.setMethod(AppLockMethod.pin, pin: pin);
+    } else {
+      await controller.setMethod(choice);
+    }
+  }
+
+  Future<String?> _promptPin(BuildContext context) {
+    final pinController = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Set a PIN'),
+        content: TextField(
+          controller: pinController,
+          keyboardType: TextInputType.number,
+          obscureText: true,
+          maxLength: 8,
+          decoration: const InputDecoration(hintText: 'At least 4 digits'),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, pinController.text),
+            child: const Text('Save'),
           ),
         ],
       ),
