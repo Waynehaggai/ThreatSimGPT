@@ -111,8 +111,19 @@ Status legend: ✅ done in the foundation · 🟡 partially scaffolded · ⬜ pl
   no‑op to Firestore
 
 ### M7 — Text‑to‑speech
-- ⬜ `flutter_tts` + `audio_service`: background playback, lock‑screen/Bluetooth
-  controls, speed/voice/pitch, sentence highlighting, sleep timer, exact resume
+- ✅ Sentence segmenter (`segmentBook`/`splitSentences`, pure + tested) with
+  absolute offsets for highlighting + exact‑sentence resume
+- ✅ `FlutterTtsService` (`TtsService`): sentence‑by‑sentence speak, play/pause/
+  resume/stop, speed, pitch, voice selection, sleep timer
+- ✅ `TtsPlaybackController` (unit‑tested with a fake engine): drives the service,
+  tracks the current sentence, persists `ttsSentenceIndex` to reading progress
+- ✅ Live sentence highlighting in the reader (transient annotation) + read‑aloud
+  transport bar (play/pause, stop, speed cycler, sleep timer); headphones button
+- ✅ `LumenAudioHandler` (`audio_service`) for background playback + lock‑screen/
+  Bluetooth controls (native — verified on device; registered per docs)
+- 🟡 flutter_tts / audio_service are native — verified on device; segmentation +
+  controller logic covered by the pure‑Dart suite
+- ⬜ Auto‑scroll to the spoken sentence; premium AI voices behind `TtsService`
 
 ### M8 — OCR
 - ⬜ ML Kit `OcrService`: detect image‑only PDFs, run OCR → Smart content,

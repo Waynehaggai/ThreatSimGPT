@@ -10,15 +10,20 @@ import '../../../../domain/entities/book_content.dart';
 import '../../../../domain/entities/enums.dart';
 import '../../../../domain/usecases/reader_usecases.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
+import '../../../../domain/services/tts_service.dart';
 import '../providers/annotation_providers.dart';
 import '../providers/reader_providers.dart';
+import '../providers/tts_controller.dart';
+import '../providers/tts_providers.dart';
 import '../rendering/reader_typography.dart';
+import '../rendering/sentence_segmenter.dart';
 import '../widgets/bookmarks_sheet.dart';
 import '../widgets/original_reader_view.dart';
 import '../widgets/resume_prompt.dart';
 import '../widgets/selection_toolbar.dart';
 import '../widgets/smart_reader_view.dart';
 import '../widgets/table_of_contents_sheet.dart';
+import '../widgets/tts_bar.dart';
 
 /// A pending text selection awaiting an annotation action.
 typedef _PendingSelection = ({int start, int end, String text});
@@ -63,7 +68,55 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     }
   }
 
+  /// Cached sentence segmentation for the current book (built on first play).
+  List<Sentence>? _sentences;
+
   void _clearSelection() => setState(() => _pending = null);
+
+  /// Starts / pauses / resumes read-aloud from the current position.
+  Future<void> _toggleTts() async {
+    final content = ref.read(readerContentProvider(widget.bookId)).valueOrNull;
+    if (content == null) return;
+    final tts = ref.read(ttsControllerProvider(widget.bookId));
+    final status = tts.state.value.status;
+
+    if (status == TtsState.playing) {
+      await tts.pause();
+      return;
+    }
+    if (status == TtsState.paused) {
+      await tts.resume();
+      return;
+    }
+    final sentences = _sentences ??= segmentBook(content);
+    if (sentences.isEmpty) return;
+    // Resume from the last spoken sentence, else the nearest to reading position.
+    final resume = ref.read(readerResumeProvider(widget.bookId)).valueOrNull;
+    final fromIndex = resume?.ttsSentenceIndex ??
+        (tts.state.value.currentIndex).clamp(0, sentences.length - 1);
+    await tts.play(sentences, fromIndex: fromIndex);
+  }
+
+  /// A transient highlight over the sentence currently being spoken.
+  Annotation? _spokenSentenceHighlight(TtsUiState ttsState) {
+    if (!ttsState.isActive) return null;
+    final sentences = _sentences;
+    if (sentences == null) return null;
+    final i = ttsState.currentIndex;
+    if (i < 0 || i >= sentences.length) return null;
+    final s = sentences[i];
+    final now = DateTime.now();
+    return Annotation(
+      id: '__tts_current__',
+      bookId: widget.bookId,
+      type: AnnotationType.highlight,
+      createdAt: now,
+      updatedAt: now,
+      colorValue: 0xFF80D8FF, // distinct read-aloud tint
+      startOffset: s.start,
+      endOffset: s.end,
+    );
+  }
 
   Future<void> _applyHighlight({
     int? color,
@@ -124,71 +177,93 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
         body: bookAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => _ReaderError(message: '$e'),
-          data: (book) => Stack(
-            children: [
-              Positioned.fill(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => ref
-                      .read(readerControllerProvider(widget.bookId).notifier)
-                      .toggleImmersive(),
-                  child: _ReaderSurface(
-                    bookId: widget.bookId,
-                    book: book,
-                    mode: ui.mode,
-                    palette: palette,
-                    jumpPercent: _jumpPercent,
-                    annotations: annotations,
-                    onSelect: (start, end, text) =>
-                        setState(() => _pending = (start: start, end: end, text: text)),
-                  ),
-                ),
-              ),
-              AnimatedSlide(
-                duration: const Duration(milliseconds: 220),
-                offset: ui.immersive ? const Offset(0, -1) : Offset.zero,
-                child: _TopBar(
-                  bookId: widget.bookId,
-                  book: book,
-                  palette: palette,
-                  onJump: (percent) => setState(() => _jumpPercent = percent),
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+          data: (book) {
+            final tts = ref.read(ttsControllerProvider(widget.bookId));
+            return ValueListenableBuilder<TtsUiState>(
+              valueListenable: tts.state,
+              builder: (context, ttsState, _) {
+                final spoken = _spokenSentenceHighlight(ttsState);
+                final allAnnotations =
+                    spoken == null ? annotations : [...annotations, spoken];
+                return Stack(
                   children: [
-                    if (_pending != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: SelectionToolbar(
-                          onHighlight: (color) {
-                            _applyHighlight(color: color);
-                          },
-                          onUnderline: () =>
-                              _applyHighlight(type: AnnotationType.underline),
-                          onNote: _addNote,
-                          onCopy: _copySelection,
-                          onDismiss: _clearSelection,
+                    Positioned.fill(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => ref
+                            .read(readerControllerProvider(widget.bookId).notifier)
+                            .toggleImmersive(),
+                        child: _ReaderSurface(
+                          bookId: widget.bookId,
+                          book: book,
+                          mode: ui.mode,
+                          palette: palette,
+                          jumpPercent: _jumpPercent,
+                          annotations: allAnnotations,
+                          onSelect: (start, end, text) => setState(
+                              () => _pending = (start: start, end: end, text: text)),
                         ),
                       ),
+                    ),
                     AnimatedSlide(
                       duration: const Duration(milliseconds: 220),
-                      offset: ui.immersive ? const Offset(0, 1) : Offset.zero,
-                      child: _BottomBar(
+                      offset: ui.immersive ? const Offset(0, -1) : Offset.zero,
+                      child: _TopBar(
                         bookId: widget.bookId,
                         book: book,
                         palette: palette,
-                        onJump: (percent) =>
-                            setState(() => _jumpPercent = percent),
+                        onJump: (percent) => setState(() => _jumpPercent = percent),
+                        onToggleTts: _toggleTts,
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_pending != null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: SelectionToolbar(
+                                onHighlight: (color) =>
+                                    _applyHighlight(color: color),
+                                onUnderline: () => _applyHighlight(
+                                    type: AnnotationType.underline),
+                                onNote: _addNote,
+                                onCopy: _copySelection,
+                                onDismiss: _clearSelection,
+                              ),
+                            ),
+                          if (ttsBarVisible(ttsState) && !ui.immersive)
+                            TtsBar(
+                              state: ttsState,
+                              palette: palette,
+                              onPlayPause: _toggleTts,
+                              onStop: tts.stop,
+                              onSpeed: tts.setSpeed,
+                              onSleepTimer: tts.setSleepTimer,
+                            ),
+                          AnimatedSlide(
+                            duration: const Duration(milliseconds: 220),
+                            offset: ui.immersive
+                                ? const Offset(0, 1)
+                                : Offset.zero,
+                            child: _BottomBar(
+                              bookId: widget.bookId,
+                              book: book,
+                              palette: palette,
+                              onJump: (percent) =>
+                                  setState(() => _jumpPercent = percent),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
-                ),
-              ),
-            ],
-          ),
+                );
+              },
+            );
+          },
         ),
       ),
     );
@@ -265,12 +340,14 @@ class _TopBar extends ConsumerWidget {
     required this.book,
     required this.palette,
     required this.onJump,
+    required this.onToggleTts,
   });
 
   final String bookId;
   final Book book;
   final ReadingPalette palette;
   final ValueChanged<double> onJump;
+  final VoidCallback onToggleTts;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -315,6 +392,11 @@ class _TopBar extends ConsumerWidget {
               tooltip: 'Bookmarks',
               icon: Icon(Icons.bookmarks_outlined, color: palette.text),
               onPressed: () => _openBookmarks(context, ref),
+            ),
+            IconButton(
+              tooltip: 'Read aloud',
+              icon: Icon(Icons.headphones_rounded, color: palette.text),
+              onPressed: onToggleTts,
             ),
             PopupMenuButton<String>(
               iconColor: palette.text,
