@@ -8,6 +8,7 @@ import '../../domain/entities/book_content.dart';
 import '../../domain/entities/collection.dart';
 import '../../domain/entities/enums.dart';
 import '../../domain/repositories/library_repository.dart';
+import '../../domain/services/import_service.dart';
 import '../local/daos/sync_queue_dao.dart';
 import '../local/models/library_models.dart';
 import '../mappers/library_mappers.dart';
@@ -20,10 +21,11 @@ import 'library_query_matcher.dart';
 /// `DocumentParsingService` (ROADMAP M2) supplies import metadata and Smart
 /// content; here import persists the record and the parser is injected.
 class IsarLibraryRepository implements LibraryRepository {
-  IsarLibraryRepository(this._isar, this._syncQueue);
+  IsarLibraryRepository(this._isar, this._syncQueue, this._import);
 
   final Isar _isar;
   final SyncQueueDao _syncQueue;
+  final ImportService _import;
 
   @override
   Stream<List<Book>> watchBooks(LibraryQuery query) {
@@ -52,12 +54,32 @@ class IsarLibraryRepository implements LibraryRepository {
 
   @override
   Future<Result<Book>> importBook(String sourcePath) async {
-    // NOTE: the full import pipeline (copy into app storage, checksum, metadata
-    // + cover extraction via DocumentParsingService) lands in M2. This persists
-    // a minimal record so the flow is wired end-to-end.
-    return const Result.failure(
-      DocumentFailure('Import pipeline is implemented in ROADMAP M2.'),
-    );
+    final prepared = await _import.prepare(sourcePath);
+    final book = prepared.valueOrNull;
+    if (book == null) return Result.failure(prepared.failureOrNull!);
+
+    try {
+      // Dedupe by content checksum — re-importing the same file returns the
+      // existing book instead of creating a copy.
+      final checksum = book.checksum;
+      if (checksum != null) {
+        final existing = await _isar.bookModels
+            .filter()
+            .checksumEqualTo(checksum)
+            .findFirst();
+        if (existing != null) return Result.success(existing.toEntity());
+      }
+
+      await _isar.writeTxn(() => _isar.bookModels.put(book.toModel()));
+      await _syncQueue.enqueue(
+        entityType: SyncEntityType.book,
+        entityId: book.id,
+        action: SyncAction.create,
+      );
+      return Result.success(book);
+    } on Object catch (e) {
+      return Result.failure(StorageFailure('Failed to save import.', cause: e));
+    }
   }
 
   @override

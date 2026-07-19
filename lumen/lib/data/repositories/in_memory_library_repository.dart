@@ -9,6 +9,7 @@ import '../../domain/entities/book_content.dart';
 import '../../domain/entities/collection.dart';
 import '../../domain/entities/enums.dart';
 import '../../domain/repositories/library_repository.dart';
+import '../../domain/services/import_service.dart';
 import 'library_query_matcher.dart';
 
 /// A pure-Dart, in-memory [LibraryRepository].
@@ -19,7 +20,8 @@ import 'library_query_matcher.dart';
 /// enqueues sync operations — the interface and behaviour are identical, so no
 /// caller changes.
 class InMemoryLibraryRepository implements LibraryRepository {
-  InMemoryLibraryRepository({List<Book>? seed}) {
+  InMemoryLibraryRepository({List<Book>? seed, ImportService? importService})
+      : _import = importService {
     if (seed != null) {
       for (final b in seed) {
         _books[b.id] = b;
@@ -28,6 +30,8 @@ class InMemoryLibraryRepository implements LibraryRepository {
     _emit();
     _emitCollections();
   }
+
+  final ImportService? _import;
 
   final Map<String, Book> _books = {};
   final Map<String, Collection> _collections = {};
@@ -63,17 +67,31 @@ class InMemoryLibraryRepository implements LibraryRepository {
 
   @override
   Future<Result<Book>> importBook(String sourcePath) async {
+    // With the import pipeline configured, use it (copy + checksum + metadata).
+    final importer = _import;
+    if (importer != null) {
+      final prepared = await importer.prepare(sourcePath);
+      final book = prepared.valueOrNull;
+      if (book == null) return Result.failure(prepared.failureOrNull!);
+
+      // Dedupe by content checksum — re-importing the same file is a no-op.
+      final duplicate = _findByChecksum(book.checksum);
+      if (duplicate != null) return Result.success(duplicate);
+
+      _books[book.id] = book;
+      _emit();
+      return Result.success(book);
+    }
+
+    // Fallback (no pipeline): register a minimal record pointing at the source.
     final ext = p.extension(sourcePath);
     final format = BookFormat.fromExtension(ext);
     if (!format.supportsSmartMode && !format.hasOriginalLayout) {
-      return Result.failure(
-        DocumentFailure('Unsupported format: $ext'),
-      );
+      return Result.failure(DocumentFailure('Unsupported format: $ext'));
     }
-    final title = p.basenameWithoutExtension(sourcePath);
     final book = Book(
       id: _nextId(),
-      title: title,
+      title: p.basenameWithoutExtension(sourcePath),
       author: 'Unknown',
       format: format,
       filePath: sourcePath,
@@ -86,6 +104,14 @@ class InMemoryLibraryRepository implements LibraryRepository {
     _books[book.id] = book;
     _emit();
     return Result.success(book);
+  }
+
+  Book? _findByChecksum(String? checksum) {
+    if (checksum == null) return null;
+    for (final b in _books.values) {
+      if (b.checksum == checksum) return b;
+    }
+    return null;
   }
 
   @override

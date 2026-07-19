@@ -41,10 +41,15 @@ dependencies:
   google_sign_in: ^6.2.1
   sign_in_with_apple: ^6.1.2
 
-  # ── Document parsing / reading engine ────────────────────────────────────
+  # ── Document import / parsing / reading engine ───────────────────────────
+  file_picker: ^8.1.2       # Native file chooser for import
   pdfrx: ^1.0.86            # High-performance PDF rendering (Original Mode)
   epubx: ^4.0.0             # EPUB parsing
   syncfusion_flutter_pdf: ^27.1.48  # PDF text/structure extraction
+  archive: ^3.6.1           # DOCX (zip) unpacking
+  xml: ^6.5.0               # DOCX (OpenXML) parsing
+  html: ^0.15.4             # EPUB/DOCX HTML content → blocks
+  image: ^4.2.0             # Cover image encoding
 
   # ── OCR & TTS ────────────────────────────────────────────────────────────
   google_mlkit_text_recognition: ^0.13.1

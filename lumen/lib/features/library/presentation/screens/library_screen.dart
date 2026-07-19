@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -40,7 +41,7 @@ class LibraryScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _import(ref),
+        onPressed: () => _import(context, ref),
         icon: const Icon(Icons.add_rounded),
         label: const Text('Import'),
       ),
@@ -49,7 +50,7 @@ class LibraryScreen extends ConsumerWidget {
         error: (e, _) => Center(child: Text('Failed to load library:\n$e')),
         data: (books) {
           if (books.isEmpty) {
-            return LibraryEmptyState(onImport: () => _import(ref));
+            return LibraryEmptyState(onImport: () => _import(context, ref));
           }
           return layout == LibraryLayout.grid
               ? GridView.builder(
@@ -83,9 +84,32 @@ class LibraryScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _import(WidgetRef ref) async {
-    // A real build uses file_picker to choose a document; the import use case
-    // then copies it into app storage and extracts metadata. Wired in roadmap
-    // milestone M2 (Import pipeline).
+  Future<void> _import(BuildContext context, WidgetRef ref) async {
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: AppConstants.supportedImportExtensions.toList(),
+      allowMultiple: true,
+    );
+    if (picked == null) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    final importer = ref.read(importBookProvider);
+    var imported = 0;
+    for (final file in picked.files) {
+      final path = file.path;
+      if (path == null) continue;
+      final result = await importer(path);
+      result.fold(
+        onSuccess: (_) => imported++,
+        onFailure: (f) => messenger.showSnackBar(
+          SnackBar(content: Text('Import failed: ${f.message}')),
+        ),
+      );
+    }
+    if (imported > 0) {
+      messenger.showSnackBar(
+        SnackBar(content: Text('Imported $imported book${imported == 1 ? '' : 's'}')),
+      );
+    }
   }
 }

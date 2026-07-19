@@ -2,10 +2,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/local/daos/sync_queue_dao.dart';
 import '../../data/local/isar_database.dart';
+import '../../data/parsers/docx_parser.dart';
+import '../../data/parsers/document_parsing_service_impl.dart';
+import '../../data/parsers/epub_parser.dart';
+import '../../data/parsers/pdf_parser.dart';
+import '../../data/parsers/plain_text_parser.dart';
 import '../../data/repositories/isar_annotation_repository.dart';
 import '../../data/repositories/isar_library_repository.dart';
 import '../../data/repositories/isar_progress_repository.dart';
 import '../../data/repositories/isar_settings_repository.dart';
+import '../../data/services/file_import_service.dart';
 import '../../data/services/secure_security_service.dart';
 import '../../features/library/presentation/providers/library_providers.dart';
 import '../utils/logger.dart';
@@ -28,12 +34,22 @@ Future<List<Override>> buildProductionOverrides() async {
     final db = await IsarDatabase.open(encryptionKey: keyResult.valueOrNull);
     final syncQueue = SyncQueueDao(db.isar);
 
+    final parsing = DocumentParsingServiceImpl(const [
+      PlainTextParser(),
+      EpubParser(),
+      PdfParser(),
+      DocxParser(),
+    ]);
+    final importService = FileImportService(parsing);
+
     log.info('Isar database opened; production repositories wired.');
 
     return [
       securityServiceProvider.overrideWithValue(security),
-      libraryRepositoryProvider
-          .overrideWithValue(IsarLibraryRepository(db.isar, syncQueue)),
+      documentParsingServiceProvider.overrideWithValue(parsing),
+      importServiceProvider.overrideWithValue(importService),
+      libraryRepositoryProvider.overrideWithValue(
+          IsarLibraryRepository(db.isar, syncQueue, importService)),
       annotationRepositoryProvider
           .overrideWithValue(IsarAnnotationRepository(db.isar, syncQueue)),
       progressRepositoryProvider

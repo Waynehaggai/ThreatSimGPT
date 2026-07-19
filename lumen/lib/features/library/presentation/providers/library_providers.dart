@@ -1,14 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/di/repository_providers.dart';
 import '../../../../data/repositories/in_memory_library_repository.dart';
 import '../../../../domain/entities/book.dart';
 import '../../../../domain/repositories/library_repository.dart';
 import '../../../../domain/usecases/library_usecases.dart';
 
-/// The active [LibraryRepository]. Defaults to the in-memory implementation and
-/// is overridden with `IsarLibraryRepository` in `main.dart` for production.
+/// The active [LibraryRepository]. Defaults to the in-memory implementation
+/// (wired with the real import pipeline) and is overridden with
+/// `IsarLibraryRepository` in the bootstrap for production.
 final libraryRepositoryProvider = Provider<LibraryRepository>((ref) {
-  return InMemoryLibraryRepository(seed: _demoSeed());
+  return InMemoryLibraryRepository(
+    seed: _demoSeed(),
+    importService: ref.watch(importServiceProvider),
+  );
 });
 
 /// How the library is currently viewed (grid vs list) — a UI-only concern.

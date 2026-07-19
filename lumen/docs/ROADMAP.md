@@ -41,10 +41,18 @@ Status legend: ✅ done in the foundation · 🟡 partially scaffolded · ⬜ pl
 > can be dropped in behind the same interfaces (tracked in M5).
 
 ### M2 — Import pipeline
-- ⬜ `file_picker` import; copy into app storage; checksum + dedupe
-- ⬜ `DocumentParser` impls: PDF (Syncfusion), EPUB (epubx), TXT, DOCX
-- ⬜ Metadata + cover extraction; page counts
-- 🟡 Format model & dispatch (`DocumentParsingService`) — interfaces done
+- ✅ `FileImportService`: checksum (SHA‑256) → copy into app storage →
+  metadata extraction; injectable dir/clock, unit‑tested
+- ✅ Dedupe by content checksum in both repositories (checksum indexed in Isar)
+- ✅ `file_picker` multi‑select import wired to the library FAB + empty state
+- ✅ `DocumentParser` impls: TXT (done M3), EPUB (epubx), PDF (Syncfusion),
+  DOCX (archive + xml); all registered in `DocumentParsingService`
+- ✅ HTML→blocks converter (`parseHtmlToBlocks`, pure + tested) shared by EPUB
+- ✅ Metadata + page counts; EPUB cover extraction (PNG); image‑only PDF
+  detection sets `needsOcr` (feeds M8)
+- 🟡 EPUB/PDF/DOCX parsers are native/third‑party‑lib backed — verified on
+  device rather than in the pure‑Dart suite
+- ⬜ Import progress UI for very large PDFs; PDF cover rasterization (viewer)
 
 ### M3 — Reading engine
 - ✅ Smart Mode reflow renderer over `BookContent` — `block_renderer` handles

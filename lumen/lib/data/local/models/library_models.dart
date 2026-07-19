@@ -57,6 +57,9 @@ class BookModel {
   late ReadingMode defaultMode;
 
   String? language;
+
+  /// Content hash for dedupe on import.
+  @Index()
   String? checksum;
 }
 

@@ -1,14 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/parsers/docx_parser.dart';
 import '../../data/parsers/document_parsing_service_impl.dart';
+import '../../data/parsers/epub_parser.dart';
+import '../../data/parsers/pdf_parser.dart';
 import '../../data/parsers/plain_text_parser.dart';
 import '../../data/repositories/in_memory_annotation_repository.dart';
 import '../../data/repositories/in_memory_progress_repository.dart';
+import '../../data/services/file_import_service.dart';
 import '../../domain/repositories/annotation_repository.dart';
 import '../../domain/repositories/progress_repository.dart';
 import '../../domain/repositories/settings_repository.dart';
 import '../../domain/services/ai_service.dart';
 import '../../domain/services/document_parser.dart';
+import '../../domain/services/import_service.dart';
 import '../../domain/services/security_service.dart';
 
 /// Repository/service providers that have no lightweight default and are
@@ -40,9 +45,20 @@ final progressRepositoryProvider =
 final settingsRepositoryProvider = Provider<SettingsRepository>(
     (ref) => _mustOverride('settingsRepositoryProvider'));
 
-/// Document parsing (TXT works today; PDF/EPUB/DOCX register in M2).
+/// Document parsing for every supported format. Adding a format is a one-line
+/// registration here plus the parser implementation.
 final documentParsingServiceProvider = Provider<DocumentParsingService>(
-  (ref) => DocumentParsingServiceImpl(const [PlainTextParser()]),
+  (ref) => DocumentParsingServiceImpl(const [
+    PlainTextParser(),
+    EpubParser(),
+    PdfParser(),
+    DocxParser(),
+  ]),
+);
+
+/// The import pipeline: checksum → copy into app storage → extract metadata.
+final importServiceProvider = Provider<ImportService>(
+  (ref) => FileImportService(ref.watch(documentParsingServiceProvider)),
 );
 
 /// AI features default to the no‑op stub; swap in a real provider when an AI
