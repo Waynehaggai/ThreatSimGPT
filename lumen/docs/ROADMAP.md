@@ -18,11 +18,27 @@ Status legend: ✅ done in the foundation · 🟡 partially scaffolded · ⬜ pl
 ## Milestones
 
 ### M1 — Persistence & DI hardening
-- ⬜ Isar collections + mappers for all entities; `IsarLibraryRepository`,
-  `IsarAnnotationRepository`, `IsarProgressRepository`, `IsarSettingsRepository`
-- ⬜ Encrypted DB open via `SecurityService.databaseEncryptionKey()`
-- ⬜ Hive caches; secure storage for tokens/keys
-- ⬜ build_runner codegen (Isar/Freezed/Riverpod/JSON)
+- ✅ Isar collection models for all entities (`data/local/models/`) with indexes
+- ✅ Mappers (entity ⇄ model) with deterministic `fastHash` ids for upserts
+- ✅ `IsarLibraryRepository`, `IsarAnnotationRepository`,
+  `IsarProgressRepository`, `IsarSettingsRepository` (offline-first, reactive,
+  sync-enqueueing)
+- ✅ Durable `SyncQueueDao` backing store for the offline queue
+- ✅ `SecureSecurityService` — biometric/PIN + secure key storage;
+  `databaseEncryptionKey()` threaded into DB open (see encryption note below)
+- ✅ `HiveCache` for lightweight key/value caching
+- ✅ DI bootstrap (`core/di/bootstrap.dart`) with graceful in-memory fallback
+- ✅ Tests: library-query matcher, `fastHash`, mapper round-trips (codegen-gated)
+- ⬜ Run `build_runner` codegen on a Flutter machine to generate `*.g.dart`
+  (models are annotated and generate-ready; see docs/SETUP.md)
+- ⬜ Wire remaining presentation (annotation/progress/settings screens) onto the
+  new repository providers
+
+> **Encryption note:** Isar 3 (community) has no built‑in at‑rest encryption. On
+> device, the DB sits in the OS‑encrypted app sandbox; tokens/keys/PIN hash live
+> in the secure enclave via `flutter_secure_storage`. The
+> `databaseEncryptionKey()` hook is plumbed through so a SQLCipher‑backed engine
+> can be dropped in behind the same interfaces (tracked in M5).
 
 ### M2 — Import pipeline
 - ⬜ `file_picker` import; copy into app storage; checksum + dedupe

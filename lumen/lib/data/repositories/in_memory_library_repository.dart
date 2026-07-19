@@ -9,6 +9,7 @@ import '../../domain/entities/book_content.dart';
 import '../../domain/entities/collection.dart';
 import '../../domain/entities/enums.dart';
 import '../../domain/repositories/library_repository.dart';
+import 'library_query_matcher.dart';
 
 /// A pure-Dart, in-memory [LibraryRepository].
 ///
@@ -47,39 +48,9 @@ class InMemoryLibraryRepository implements LibraryRepository {
 
   @override
   Stream<List<Book>> watchBooks(LibraryQuery query) async* {
-    yield _applyQuery(_snapshot, query);
-    yield* _booksController.stream.map((books) => _applyQuery(books, query));
-  }
-
-  List<Book> _applyQuery(List<Book> books, LibraryQuery q) {
-    var result = books.where((b) {
-      if (!q.includeArchived && b.isArchived) return false;
-      if (q.favoritesOnly && !b.isFavorite) return false;
-      if (q.collectionId != null &&
-          !b.collectionIds.contains(q.collectionId)) {
-        return false;
-      }
-      final search = q.search?.trim().toLowerCase();
-      if (search != null && search.isNotEmpty) {
-        final hay = '${b.title} ${b.author}'.toLowerCase();
-        if (!hay.contains(search)) return false;
-      }
-      return true;
-    }).toList();
-
-    int cmp(Book a, Book b) => switch (q.sortBy) {
-          LibrarySort.title => a.title.compareTo(b.title),
-          LibrarySort.author => a.author.compareTo(b.author),
-          LibrarySort.dateImported =>
-            a.dateImported.compareTo(b.dateImported),
-          LibrarySort.lastOpened => (a.lastOpened ?? a.dateImported)
-              .compareTo(b.lastOpened ?? b.dateImported),
-          LibrarySort.progress =>
-            a.progressPercent.compareTo(b.progressPercent),
-          LibrarySort.fileSize => a.fileSizeBytes.compareTo(b.fileSizeBytes),
-        };
-    result.sort((a, b) => q.descending ? cmp(b, a) : cmp(a, b));
-    return result;
+    yield applyLibraryQuery(_snapshot, query);
+    yield* _booksController.stream
+        .map((books) => applyLibraryQuery(books, query));
   }
 
   @override

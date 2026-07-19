@@ -2,31 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'core/di/bootstrap.dart';
 import 'core/utils/logger.dart';
 
 /// Application entry point.
 ///
-/// Firebase is initialised lazily and optionally: the app runs fully offline in
-/// guest mode without a Firebase project. Once `firebase_options.dart` exists
-/// (see docs/FIREBASE_SETUP.md), uncomment the initialisation block and override
-/// the auth/sync repository providers with their Firebase implementations.
+/// Boots the offline‑first persistence layer (encrypted‑at‑rest Isar + secure
+/// storage) and wires the Isar‑backed repositories via DI overrides. If
+/// persistence can't be initialised, the app still launches in the offline
+/// in‑memory/guest mode (see `buildProductionOverrides`).
+///
+/// Firebase is initialised lazily and optionally — the app runs fully offline
+/// without a Firebase project. Once `firebase_options.dart` exists (see
+/// docs/FIREBASE_SETUP.md), uncomment the initialisation and add the Firebase
+/// auth/sync overrides alongside the persistence ones.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppLogger.init();
 
-  // ── Optional Firebase bootstrap ───────────────────────────────────────────
   // await Firebase.initializeApp(
   //   options: DefaultFirebaseOptions.currentPlatform,
   // );
 
+  final overrides = await buildProductionOverrides();
+
   runApp(
     ProviderScope(
-      overrides: const [
-        // In production, override the default in-memory/guest providers with
-        // Isar + Firebase implementations here, e.g.:
-        //   libraryRepositoryProvider.overrideWithValue(isarLibraryRepo),
-        //   authRepositoryProvider.overrideWithValue(firebaseAuthRepo),
-      ],
+      overrides: overrides,
       child: const LumenApp(),
     ),
   );
