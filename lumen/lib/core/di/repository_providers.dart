@@ -7,11 +7,14 @@ import '../../data/parsers/pdf_parser.dart';
 import '../../data/parsers/plain_text_parser.dart';
 import '../../data/repositories/in_memory_annotation_repository.dart';
 import '../../data/repositories/in_memory_progress_repository.dart';
+import '../../data/repositories/in_memory_statistics_repository.dart';
 import '../../data/services/file_import_service.dart';
 import '../../data/sync/noop_sync_repository.dart';
+import '../../domain/entities/reading_stats.dart';
 import '../../domain/repositories/annotation_repository.dart';
 import '../../domain/repositories/progress_repository.dart';
 import '../../domain/repositories/settings_repository.dart';
+import '../../domain/repositories/statistics_repository.dart';
 import '../../domain/repositories/sync_repository.dart';
 import '../../domain/services/ai_service.dart';
 import '../../domain/services/document_parser.dart';
@@ -72,6 +75,15 @@ final syncRepositoryProvider =
 /// Reactive sync status for the UI (status chip, settings).
 final syncStateProvider = StreamProvider<SyncState>(
     (ref) => ref.watch(syncRepositoryProvider).watchState());
+
+/// Reading statistics. Defaults to in-memory; the bootstrap overrides it with
+/// `IsarStatisticsRepository`.
+final statisticsRepositoryProvider = Provider<StatisticsRepository>(
+    (ref) => InMemoryStatisticsRepository());
+
+/// Reactive aggregate stats for the dashboard.
+final readingStatsProvider = StreamProvider<ReadingStats>(
+    (ref) => ref.watch(statisticsRepositoryProvider).watchStats());
 
 /// AI features default to the no‑op stub; swap in a real provider when an AI
 /// backend is configured (ROADMAP: Future).

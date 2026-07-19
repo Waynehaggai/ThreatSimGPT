@@ -11,6 +11,7 @@ import '../../data/repositories/isar_annotation_repository.dart';
 import '../../data/repositories/isar_library_repository.dart';
 import '../../data/repositories/isar_progress_repository.dart';
 import '../../data/repositories/isar_settings_repository.dart';
+import '../../data/repositories/isar_statistics_repository.dart';
 import '../../data/services/file_import_service.dart';
 import '../../data/services/secure_security_service.dart';
 import '../../data/sync/remote_data_source.dart';
@@ -71,6 +72,8 @@ Future<List<Override>> buildProductionOverrides() async {
           .overrideWithValue(IsarProgressRepository(db.isar, syncQueue)),
       settingsRepositoryProvider
           .overrideWithValue(IsarSettingsRepository(db.isar, syncQueue)),
+      statisticsRepositoryProvider
+          .overrideWithValue(IsarStatisticsRepository(db.isar, syncQueue)),
     ];
   } on Object catch (e, s) {
     log.warning('Persistence bootstrap failed; falling back to in-memory.', e);

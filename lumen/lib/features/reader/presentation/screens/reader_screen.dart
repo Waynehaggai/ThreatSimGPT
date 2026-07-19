@@ -328,7 +328,11 @@ class _ReaderSurface extends ConsumerWidget {
     return contentAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => _ReaderError(message: '$e'),
-      data: (content) => SmartReaderView(
+      data: (content) {
+        // Feed session tracking the totals for pages/words-read estimates.
+        controller.setBookMetrics(
+            pageCount: book.pageCount, wordCount: content.wordCount);
+        return SmartReaderView(
         // Changing the key on a TOC jump re-lays out at the new fraction.
         key: ValueKey('smart-$jumpPercent-${settings.fontSizeSp}'
             '-${settings.pageNavigation}'),
@@ -337,14 +341,15 @@ class _ReaderSurface extends ConsumerWidget {
         navigation: settings.pageNavigation,
         initialPercent: initialPercent,
         annotations: annotations,
-        onSelect: onSelect,
-        onPosition: ({required percent, required charOffset, chapterId}) =>
-            controller.onPositionChanged(
-          percent: percent,
-          charOffset: charOffset,
-          chapterId: chapterId,
-        ),
-      ),
+          onSelect: onSelect,
+          onPosition: ({required percent, required charOffset, chapterId}) =>
+              controller.onPositionChanged(
+            percent: percent,
+            charOffset: charOffset,
+            chapterId: chapterId,
+          ),
+        );
+      },
     );
   }
 }

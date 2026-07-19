@@ -12,6 +12,7 @@ class ReadingStats {
     this.longestStreakDays = 0,
     this.dailyGoalMinutes = 20,
     this.wordsPerMinute = 238,
+    this.minutesToday = 0,
     this.minutesByHour = const <int>[],
     this.genreMinutes = const <String, int>{},
     this.lastReadDate,
@@ -26,6 +27,9 @@ class ReadingStats {
 
   /// Learned average reading speed, seeds remaining-time estimates.
   final int wordsPerMinute;
+
+  /// Minutes read so far today (reset when [lastReadDate] rolls to a new day).
+  final int minutesToday;
 
   /// 24-length histogram of minutes read per hour-of-day (most productive hours).
   final List<int> minutesByHour;
@@ -57,6 +61,7 @@ class ReadingStats {
     int? longestStreakDays,
     int? dailyGoalMinutes,
     int? wordsPerMinute,
+    int? minutesToday,
     List<int>? minutesByHour,
     Map<String, int>? genreMinutes,
     DateTime? lastReadDate,
@@ -69,6 +74,7 @@ class ReadingStats {
       longestStreakDays: longestStreakDays ?? this.longestStreakDays,
       dailyGoalMinutes: dailyGoalMinutes ?? this.dailyGoalMinutes,
       wordsPerMinute: wordsPerMinute ?? this.wordsPerMinute,
+      minutesToday: minutesToday ?? this.minutesToday,
       minutesByHour: minutesByHour ?? this.minutesByHour,
       genreMinutes: genreMinutes ?? this.genreMinutes,
       lastReadDate: lastReadDate ?? this.lastReadDate,

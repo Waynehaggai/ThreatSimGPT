@@ -93,6 +93,7 @@ extension StatsModelMapper on StatsModel {
         longestStreakDays: longestStreakDays,
         dailyGoalMinutes: dailyGoalMinutes,
         wordsPerMinute: wordsPerMinute,
+        minutesToday: minutesToday,
         minutesByHour: minutesByHour,
         genreMinutes: _decodeGenres(genreMinutesJson),
         lastReadDate: lastReadDate,
@@ -115,6 +116,7 @@ extension StatsEntityMapper on ReadingStats {
     ..longestStreakDays = longestStreakDays
     ..dailyGoalMinutes = dailyGoalMinutes
     ..wordsPerMinute = wordsPerMinute
+    ..minutesToday = minutesToday
     ..minutesByHour = minutesByHour
     ..genreMinutesJson = jsonEncode(genreMinutes)
     ..lastReadDate = lastReadDate;

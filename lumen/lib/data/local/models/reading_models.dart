@@ -88,6 +88,7 @@ class StatsModel {
   late int longestStreakDays;
   late int dailyGoalMinutes;
   late int wordsPerMinute;
+  int minutesToday = 0;
 
   /// 24-length histogram of minutes read per hour-of-day.
   late List<int> minutesByHour;

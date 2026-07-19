@@ -12,6 +12,7 @@ import '../../../../domain/entities/enums.dart';
 import '../../../../domain/entities/reading_progress.dart';
 import '../../../../domain/repositories/library_repository.dart';
 import '../../../../domain/repositories/progress_repository.dart';
+import '../../../../domain/repositories/statistics_repository.dart';
 import '../../../../domain/usecases/reader_usecases.dart';
 import '../../../library/presentation/providers/library_providers.dart';
 import 'ocr_providers.dart';
@@ -120,20 +121,54 @@ class ReaderController extends FamilyNotifier<ReaderUiState, String> {
   // the provider is disposed (which would throw).
   late final ProgressRepository _progressRepo;
   late final LibraryRepository _libraryRepo;
+  late final StatisticsRepository _statsRepo;
   late final String _deviceId;
+
+  // Reading-session tracking (folded into stats on close).
+  late final DateTime _sessionStart;
+  double? _sessionStartPercent;
+  double _lastPercent = 0;
+  int _pageCount = 0;
+  int _wordCount = 0;
+  bool _finished = false;
 
   @override
   ReaderUiState build(String bookId) {
     _debouncer = Debouncer(AppConstants.progressPersistDebounce);
     _progressRepo = ref.read(progressRepositoryProvider);
     _libraryRepo = ref.read(libraryRepositoryProvider);
+    _statsRepo = ref.read(statisticsRepositoryProvider);
     _deviceId = ref.read(deviceIdProvider);
+    _sessionStart = DateTime.now();
     ref.onDispose(() {
       // Flush any pending position write when leaving the reader.
       _debouncer.flush(_persistNow);
       _debouncer.dispose();
+      _recordSession();
     });
     return const ReaderUiState();
+  }
+
+  /// Called by the reader once the book + content are known, so a session can
+  /// estimate pages/words read from the progress delta.
+  void setBookMetrics({required int pageCount, required int wordCount}) {
+    _pageCount = pageCount;
+    _wordCount = wordCount;
+  }
+
+  void _recordSession() {
+    final duration = DateTime.now().difference(_sessionStart);
+    if (duration.inSeconds < 5) return; // ignore accidental opens
+    final delta = (_lastPercent - (_sessionStartPercent ?? _lastPercent))
+        .clamp(0.0, 1.0);
+    _statsRepo.recordSession(ReadingSession(
+      bookId: arg,
+      startedAt: _sessionStart,
+      endedAt: DateTime.now(),
+      pagesRead: (delta * _pageCount).round(),
+      wordsRead: (delta * _wordCount).round(),
+      completed: _finished,
+    ));
   }
 
   void toggleImmersive() =>
@@ -150,6 +185,9 @@ class ReaderController extends FamilyNotifier<ReaderUiState, String> {
     required int charOffset,
     String? chapterId,
   }) {
+    _sessionStartPercent ??= percent;
+    _lastPercent = percent;
+    if (percent >= 0.999) _finished = true;
     state = state.copyWith(
       percent: percent,
       charOffset: charOffset,

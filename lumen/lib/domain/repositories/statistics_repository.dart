@@ -10,6 +10,7 @@ class ReadingSession {
     required this.pagesRead,
     required this.wordsRead,
     this.genre,
+    this.completed = false,
   });
 
   final String bookId;
@@ -18,6 +19,9 @@ class ReadingSession {
   final int pagesRead;
   final int wordsRead;
   final String? genre;
+
+  /// `true` if the book was finished during this session (→ books-completed++).
+  final bool completed;
 
   Duration get duration => endedAt.difference(startedAt);
 }

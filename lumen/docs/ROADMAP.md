@@ -141,8 +141,16 @@ Status legend: ✅ done in the foundation · 🟡 partially scaffolded · ⬜ pl
 - ⬜ Persist OCR content to Isar across sessions (currently session‑cached)
 
 ### M9 — Statistics & goals
-- ⬜ Session tracking → streaks, hours, pages, productive hours, genres
-- ⬜ Daily/weekly/monthly goals, yearly summaries, learned reading speed
+- ✅ `applySession` aggregator (pure + tested): streak transitions, hours/pages,
+  per‑hour histogram, daily rollover, learned reading speed (EMA), books
+  completed, genre totals
+- ✅ `StatisticsRepository` impls — in‑memory default + `IsarStatisticsRepository`
+  (singleton row, sync‑enqueueing); wired in the bootstrap
+- ✅ Automatic session tracking in the reader (duration + pages/words from the
+  progress delta, finish detection) folded on close
+- ✅ Stats dashboard: books/hours/streak/pages, editable daily goal + progress,
+  most‑productive‑hours histogram, reading speed, longest streak
+- ⬜ Weekly/monthly/yearly summaries; genre tagging on books (feeds genreMinutes)
 
 ### M10 — Polish & release
 - ⬜ Performance: 2,000+‑page books open fast, 20,000+‑book libraries, lazy
