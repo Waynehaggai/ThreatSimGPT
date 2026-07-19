@@ -1,0 +1,91 @@
+name: lumen
+description: "Lumen — Intelligent Reading Platform. Read Anything. Anywhere. Forever."
+publish_to: "none"
+version: 0.1.0+1
+
+# Lumen targets the latest stable Flutter/Dart toolchain.
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+  flutter: ">=3.27.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # ── State management & DI ────────────────────────────────────────────────
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # ── Navigation ───────────────────────────────────────────────────────────
+  go_router: ^14.2.7
+
+  # ── Local persistence (offline-first) ────────────────────────────────────
+  # Isar is the primary embedded DB (fast, indexed, reactive queries).
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
+  # Hive is used for lightweight, schema-less key/value caches.
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  # Secure storage for tokens / encryption keys.
+  flutter_secure_storage: ^9.2.2
+  path: ^1.9.0
+  path_provider: ^2.1.4
+
+  # ── Firebase (cloud sync backend) ────────────────────────────────────────
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
+  firebase_storage: ^12.3.4
+  google_sign_in: ^6.2.1
+  sign_in_with_apple: ^6.1.2
+
+  # ── Document parsing / reading engine ────────────────────────────────────
+  pdfrx: ^1.0.86            # High-performance PDF rendering (Original Mode)
+  epubx: ^4.0.0             # EPUB parsing
+  syncfusion_flutter_pdf: ^27.1.48  # PDF text/structure extraction
+
+  # ── OCR & TTS ────────────────────────────────────────────────────────────
+  google_mlkit_text_recognition: ^0.13.1
+  flutter_tts: ^4.0.2
+  audio_service: ^0.18.15   # Background playback + lock-screen controls
+
+  # ── Security ─────────────────────────────────────────────────────────────
+  local_auth: ^2.3.0        # Fingerprint / Face ID / device PIN
+
+  # ── Networking / connectivity ────────────────────────────────────────────
+  connectivity_plus: ^6.0.5
+
+  # ── Utilities ────────────────────────────────────────────────────────────
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+  uuid: ^4.5.1
+  intl: ^0.19.0
+  collection: ^1.18.0
+  logging: ^1.2.0
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+  # ── Code generation ──────────────────────────────────────────────────────
+  build_runner: ^2.4.13
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+  isar_generator: ^3.1.0+1
+  riverpod_generator: ^2.4.3
+
+  # ── Testing ──────────────────────────────────────────────────────────────
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/fonts/
+  # OpenDyslexic + Bookerly-style fonts are declared here once the binary
+  # font files are added to assets/fonts/ (see docs/SETUP.md).
