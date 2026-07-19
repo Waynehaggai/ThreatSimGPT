@@ -15,6 +15,7 @@ import '../providers/reader_providers.dart';
 import '../rendering/reader_typography.dart';
 import '../widgets/bookmarks_sheet.dart';
 import '../widgets/original_reader_view.dart';
+import '../widgets/resume_prompt.dart';
 import '../widgets/selection_toolbar.dart';
 import '../widgets/smart_reader_view.dart';
 import '../widgets/table_of_contents_sheet.dart';
@@ -40,6 +41,27 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
 
   /// The current text selection awaiting a highlight/note action.
   _PendingSelection? _pending;
+
+  @override
+  void initState() {
+    super.initState();
+    // On open, check whether another device read further and offer to jump.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybePromptResume());
+  }
+
+  Future<void> _maybePromptResume() async {
+    final decision =
+        await ref.read(resumeDecisionProvider(widget.bookId).future);
+    if (!mounted || !decision.promptUser || decision.remoteNewer == null) return;
+    final accept = await ResumePrompt.show(
+      context,
+      remote: decision.remoteNewer!,
+      localPercent: decision.local?.percent,
+    );
+    if (accept ?? false) {
+      setState(() => _jumpPercent = decision.remoteNewer!.percent);
+    }
+  }
 
   void _clearSelection() => setState(() => _pending = null);
 

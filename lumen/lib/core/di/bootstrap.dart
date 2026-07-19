@@ -13,7 +13,10 @@ import '../../data/repositories/isar_progress_repository.dart';
 import '../../data/repositories/isar_settings_repository.dart';
 import '../../data/services/file_import_service.dart';
 import '../../data/services/secure_security_service.dart';
+import '../../data/sync/remote_data_source.dart';
+import '../../data/sync/sync_engine.dart';
 import '../../features/library/presentation/providers/library_providers.dart';
+import '../network/connectivity_service.dart';
 import '../utils/logger.dart';
 import 'repository_providers.dart';
 
@@ -42,12 +45,24 @@ Future<List<Override>> buildProductionOverrides() async {
     ]);
     final importService = FileImportService(parsing);
 
+    // Sync engine over the durable Isar queue. Uses a no-op remote until a
+    // Firebase backend is wired (swap in FirestoreRemoteDataSource + the
+    // FirebaseAuthRepository override once firebase_options.dart exists).
+    final connectivity = ConnectivityService();
+    final syncEngine = SyncEngine(
+      queue: syncQueue,
+      remote: const NoopRemoteDataSource(),
+      isOnline: () => connectivity.isOnline,
+      onlineChanges: connectivity.onlineChanges,
+    );
+
     log.info('Isar database opened; production repositories wired.');
 
     return [
       securityServiceProvider.overrideWithValue(security),
       documentParsingServiceProvider.overrideWithValue(parsing),
       importServiceProvider.overrideWithValue(importService),
+      syncRepositoryProvider.overrideWithValue(syncEngine),
       libraryRepositoryProvider.overrideWithValue(
           IsarLibraryRepository(db.isar, syncQueue, importService)),
       annotationRepositoryProvider

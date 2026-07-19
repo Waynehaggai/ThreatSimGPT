@@ -8,9 +8,11 @@ import '../../data/parsers/plain_text_parser.dart';
 import '../../data/repositories/in_memory_annotation_repository.dart';
 import '../../data/repositories/in_memory_progress_repository.dart';
 import '../../data/services/file_import_service.dart';
+import '../../data/sync/noop_sync_repository.dart';
 import '../../domain/repositories/annotation_repository.dart';
 import '../../domain/repositories/progress_repository.dart';
 import '../../domain/repositories/settings_repository.dart';
+import '../../domain/repositories/sync_repository.dart';
 import '../../domain/services/ai_service.dart';
 import '../../domain/services/document_parser.dart';
 import '../../domain/services/import_service.dart';
@@ -60,6 +62,16 @@ final documentParsingServiceProvider = Provider<DocumentParsingService>(
 final importServiceProvider = Provider<ImportService>(
   (ref) => FileImportService(ref.watch(documentParsingServiceProvider)),
 );
+
+/// The synchronization engine. Defaults to inert (offline / no cloud); the
+/// bootstrap overrides it with a `SyncEngine` once persistence is available and
+/// a Firebase backend is wired.
+final syncRepositoryProvider =
+    Provider<SyncRepository>((ref) => const NoopSyncRepository());
+
+/// Reactive sync status for the UI (status chip, settings).
+final syncStateProvider = StreamProvider<SyncState>(
+    (ref) => ref.watch(syncRepositoryProvider).watchState());
 
 /// AI features default to the no‑op stub; swap in a real provider when an AI
 /// backend is configured (ROADMAP: Future).

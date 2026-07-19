@@ -14,8 +14,18 @@ import 'core/utils/logger.dart';
 ///
 /// Firebase is initialised lazily and optionally — the app runs fully offline
 /// without a Firebase project. Once `firebase_options.dart` exists (see
-/// docs/FIREBASE_SETUP.md), uncomment the initialisation and add the Firebase
-/// auth/sync overrides alongside the persistence ones.
+/// docs/FIREBASE_SETUP.md):
+///   1. uncomment `Firebase.initializeApp` below;
+///   2. append the cloud overrides after the persistence ones, e.g.
+///        authRepositoryProvider.overrideWithValue(FirebaseAuthRepository()),
+///        syncRepositoryProvider.overrideWithValue(SyncEngine(
+///          queue: syncQueue,
+///          remote: FirestoreRemoteDataSource(),
+///          isOnline: () => connectivity.isOnline,
+///          onlineChanges: connectivity.onlineChanges,
+///        )),
+///      (the bootstrap already builds a SyncEngine over a no-op remote — swap in
+///       FirestoreRemoteDataSource there when Firebase is enabled).
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppLogger.init();

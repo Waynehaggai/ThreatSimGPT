@@ -91,10 +91,24 @@ Status legend: ✅ done in the foundation · 🟡 partially scaffolded · ⬜ pl
   one‑handed / left‑handed layouts, voice navigation
 
 ### M6 — Cloud sync (Firebase)
-- ⬜ `FirebaseAuthRepository` (email/Google/Apple + anonymous linking)
-- ⬜ Firestore/Storage data sources; `FirestoreSyncRepository` driving the engine
-- ⬜ Connectivity‑triggered auto‑sync; guest→account migration end‑to‑end
-- ⬜ Cross‑device resume prompt UI
+- ✅ `SyncEngine` (`SyncRepository`): drains the durable queue → remote with
+  per‑op exponential backoff, pulls + merges, tracks status — decoupled from
+  Firebase/local via `RemoteDataSource`/`SyncQueueStore`/`LocalMergeSink`
+  interfaces and **unit‑tested with in‑memory fakes**
+- ✅ Connectivity‑triggered auto‑sync (flush on regaining network) + opportunistic
+  sync on enqueue; sync status surfaced in Settings
+- ✅ `FirebaseAuthRepository` (email/Google/Apple + anonymous linking that
+  **preserves the uid**, so guest→account migration needs no copy)
+- ✅ `FirestoreRemoteDataSource` (Firestore + Storage, per‑user scoped,
+  tombstone deletes)
+- ✅ Cross‑device resume prompt UI (`ResumePrompt`) wired via `ResolveResumePoint`
+  on reader open
+- 🟡 Firebase/Firestore/Auth pieces are native‑backed — verified on device; the
+  engine orchestration is covered by the pure‑Dart suite
+- ⬜ `IsarLocalMergeSink` (apply pulled changes into Isar) + `checkRemoteNewer`
+  Firestore query; serialize full entity snapshots into sync payloads
+- ⬜ Enable Firebase (`flutterfire configure`) and flip the bootstrap remote from
+  no‑op to Firestore
 
 ### M7 — Text‑to‑speech
 - ⬜ `flutter_tts` + `audio_service`: background playback, lock‑screen/Bluetooth

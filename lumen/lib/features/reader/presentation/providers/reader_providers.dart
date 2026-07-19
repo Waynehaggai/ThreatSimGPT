@@ -12,6 +12,7 @@ import '../../../../domain/entities/enums.dart';
 import '../../../../domain/entities/reading_progress.dart';
 import '../../../../domain/repositories/library_repository.dart';
 import '../../../../domain/repositories/progress_repository.dart';
+import '../../../../domain/usecases/reader_usecases.dart';
 import '../../../library/presentation/providers/library_providers.dart';
 import 'sample_content.dart';
 
@@ -53,6 +54,15 @@ final readerResumeProvider =
     FutureProvider.family<ReadingProgress?, String>((ref, bookId) async {
   final result = await ref.watch(progressRepositoryProvider).getProgress(bookId);
   return result.valueOrNull;
+});
+
+/// Cross-device resume decision: on open, checks whether another device has a
+/// newer position (→ "Continue from X%?" prompt) or we simply resume locally.
+final resumeDecisionProvider =
+    FutureProvider.family<ResumeDecision, String>((ref, bookId) async {
+  final usecase = ResolveResumePoint(ref.watch(progressRepositoryProvider));
+  final result = await usecase(bookId);
+  return result.valueOrNull ?? const ResumeDecision();
 });
 
 /// Transient per-session reader UI state.

@@ -16,6 +16,20 @@ class SyncState {
   final int pendingCount;
   final DateTime? lastSyncedAt;
   final String? message;
+
+  SyncState copyWith({
+    SyncStatus? status,
+    int? pendingCount,
+    DateTime? lastSyncedAt,
+    String? message,
+  }) {
+    return SyncState(
+      status: status ?? this.status,
+      pendingCount: pendingCount ?? this.pendingCount,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      message: message ?? this.message,
+    );
+  }
 }
 
 /// Contract for the offline-first synchronization engine.

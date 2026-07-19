@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/di/repository_providers.dart';
 import '../../../../domain/entities/enums.dart';
+import '../../../../domain/repositories/sync_repository.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../providers/settings_providers.dart';
 
@@ -66,11 +68,36 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           _sectionHeader(context, 'Synchronization'),
-          const ListTile(
-            leading: Icon(Icons.sync_rounded),
-            title: Text('Automatic background sync'),
-            subtitle: Text('On login, while reading, and when back online'),
-            trailing: Icon(Icons.check_circle_outline_rounded),
+          Consumer(
+            builder: (context, ref, _) {
+              final sync = ref.watch(syncStateProvider).valueOrNull;
+              final status = sync?.status ?? SyncStatus.offline;
+              final (icon, label) = switch (status) {
+                SyncStatus.idle => (
+                    Icons.cloud_done_outlined,
+                    'Up to date'
+                  ),
+                SyncStatus.syncing => (Icons.sync_rounded, 'Syncing…'),
+                SyncStatus.offline => (
+                    Icons.cloud_off_outlined,
+                    'Offline — changes are queued'
+                  ),
+                SyncStatus.error => (
+                    Icons.error_outline_rounded,
+                    'Sync error — will retry'
+                  ),
+              };
+              return ListTile(
+                leading: Icon(icon),
+                title: const Text('Automatic background sync'),
+                subtitle: Text(
+                  (sync?.pendingCount ?? 0) > 0
+                      ? '$label · ${sync!.pendingCount} pending'
+                      : label,
+                ),
+                onTap: () => ref.read(syncRepositoryProvider).syncNow(),
+              );
+            },
           ),
           _sectionHeader(context, 'Security'),
           const ListTile(
