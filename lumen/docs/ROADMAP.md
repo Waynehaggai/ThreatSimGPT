@@ -161,10 +161,19 @@ Status legend: ✅ done in the foundation · 🟡 partially scaffolded · ⬜ pl
 - ⬜ Weekly/monthly/yearly summaries; genre tagging on books (feeds genreMinutes)
 
 ### M10 — Polish & release
-- ⬜ Performance: 2,000+‑page books open fast, 20,000+‑book libraries, lazy
-  loading, low memory/battery, 60 FPS
-- ⬜ Integration + performance benchmark suites
-- ⬜ Store assets, CI/CD, Play Store + App Store submission
+- ✅ CI/CD: GitHub Actions (`lumen-ci.yml`) — format → codegen → analyze → test
+  → debug APK, scoped to `lumen/**`
+- ✅ Performance benchmark suite (`test/performance`): 20k‑book query,
+  60k‑block pagination, 100k `fastHash`, 5k‑op queue — with timing guardrails
+- ✅ Integration smoke test harness (`integration_test/`): boot → guest → library
+- ✅ `IsarLocalMergeSink` — applies pulled remote **progress** into Isar via the
+  conflict resolver, closing the cloud‑sync pull loop (parser unit‑tested)
+- ✅ Deployment guide (`docs/DEPLOYMENT.md`): Android/iOS build, signing, store
+  listing, release checklist
+- 🟡 Lazy list/grid rendering already via `*.builder`; native Isar‑indexed
+  library queries for 20k+ libraries land with the persistence hot‑path pass
+- ⬜ Full‑entity sync payloads so annotations/bookmarks/settings also pull‑merge;
+  store assets (icons/splash/screenshots) and first submission
 
 ## Future (post‑1.0)
 

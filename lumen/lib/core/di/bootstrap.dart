@@ -14,6 +14,7 @@ import '../../data/repositories/isar_settings_repository.dart';
 import '../../data/repositories/isar_statistics_repository.dart';
 import '../../data/services/file_import_service.dart';
 import '../../data/services/secure_security_service.dart';
+import '../../data/sync/isar_local_merge_sink.dart';
 import '../../data/sync/remote_data_source.dart';
 import '../../data/sync/sync_engine.dart';
 import '../../features/library/presentation/providers/library_providers.dart';
@@ -55,6 +56,7 @@ Future<List<Override>> buildProductionOverrides() async {
       remote: const NoopRemoteDataSource(),
       isOnline: () => connectivity.isOnline,
       onlineChanges: connectivity.onlineChanges,
+      mergeSink: IsarLocalMergeSink(db.isar),
     );
 
     log.info('Isar database opened; production repositories wired.');

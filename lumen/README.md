@@ -66,4 +66,5 @@ See [`docs/SETUP.md`](docs/SETUP.md) for full environment setup and
 - [Database schema](docs/DATABASE_SCHEMA.md)
 - [Synchronization flow](docs/SYNC_FLOW.md)
 - [Setup](docs/SETUP.md) · [Firebase setup](docs/FIREBASE_SETUP.md)
+- [Deployment & release](docs/DEPLOYMENT.md)
 - [Roadmap](docs/ROADMAP.md)
