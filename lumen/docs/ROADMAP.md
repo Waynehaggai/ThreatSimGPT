@@ -47,12 +47,21 @@ Status legend: ✅ done in the foundation · 🟡 partially scaffolded · ⬜ pl
 - 🟡 Format model & dispatch (`DocumentParsingService`) — interfaces done
 
 ### M3 — Reading engine
-- 🟡 Original Mode PDF renderer (`pdfrx`) into the reader surface
-- ⬜ Smart Mode reflow renderer over `BookContent` (paragraphs, images, lists,
-  quotes, captions; responsive typography; no zoom/h‑scroll)
-- ⬜ Navigation styles: page‑turn, vertical/horizontal scroll, two‑page landscape,
-  continuous; page‑turn animations at 60 FPS
-- ⬜ TOC, progress/chapter indicators, estimated remaining time, exact resume
+- ✅ Smart Mode reflow renderer over `BookContent` — `block_renderer` handles
+  every `BlockType` (heading, paragraph, image, list, quote, caption, code);
+  responsive, no zoom/h‑scroll; typography driven by reading settings
+- ✅ `ReaderTypography` — settings + palette → concrete text styles (tested)
+- ✅ Working TXT parser (`PlainTextParser`) + `DocumentParsingService` dispatch,
+  so `.txt` files are a genuine end‑to‑end read path; sample content otherwise
+- ✅ Navigation: continuous/vertical scroll and page‑turn/horizontal via a
+  `ReflowPaginator` (`TextPainter` measurement) + pure `PagePacker` (tested)
+- ✅ Table of contents sheet with jump‑to‑chapter
+- ✅ Progress indicator, current‑chapter tracking, estimated remaining time,
+  and **exact resume** (debounced position persistence via `ProgressRepository`)
+- 🟡 Original Mode PDF renderer (`pdfrx`) — wired (`OriginalReaderView`);
+  native, so verified on device rather than in the pure‑Dart suite
+- ⬜ Two‑page landspace layout; polished 60 FPS page‑curl animation
+- ⬜ In‑text search + highlight anchoring hookup (lands with M4)
 
 ### M4 — Annotations, bookmarks, notes, search
 - ⬜ Selection toolbar: highlight/underline colors, sticky & free‑text notes
