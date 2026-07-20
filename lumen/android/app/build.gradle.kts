@@ -6,7 +6,9 @@ plugins {
 
 android {
     namespace = "com.lumenreader.lumen"
-    compileSdk = flutter.compileSdkVersion
+    // Some plugins (e.g. flutter_plugin_android_lifecycle) require compiling
+    // against API 36+, newer than the Flutter default.
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
