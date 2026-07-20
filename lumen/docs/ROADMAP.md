@@ -45,7 +45,7 @@ Status legend: ✅ done in the foundation · 🟡 partially scaffolded · ⬜ pl
   metadata extraction; injectable dir/clock, unit‑tested
 - ✅ Dedupe by content checksum in both repositories (checksum indexed in Isar)
 - ✅ `file_picker` multi‑select import wired to the library FAB + empty state
-- ✅ `DocumentParser` impls: TXT (done M3), EPUB (epubx), PDF (Syncfusion),
+- ✅ `DocumentParser` impls: TXT (done M3), EPUB (epub_pro), PDF (Syncfusion),
   DOCX (archive + xml); all registered in `DocumentParsingService`
 - ✅ HTML→blocks converter (`parseHtmlToBlocks`, pure + tested) shared by EPUB
 - ✅ Metadata + page counts; EPUB cover extraction (PNG); image‑only PDF
