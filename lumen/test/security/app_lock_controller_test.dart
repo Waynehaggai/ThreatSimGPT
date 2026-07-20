@@ -11,7 +11,6 @@ class FakeSecurity implements SecurityService {
     this.authOk = true,
     this.pin,
   });
-  @override
   AppLockMethod method;
   bool authOk;
   String? pin;

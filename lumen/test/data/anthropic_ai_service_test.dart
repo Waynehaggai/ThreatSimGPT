@@ -6,7 +6,9 @@ import 'package:http/testing.dart';
 import 'package:lumen/data/services/anthropic_ai_service.dart';
 import 'package:lumen/domain/entities/book_content.dart';
 
-/// A Messages API text response.
+/// A Messages API text response. The utf-8 content-type mirrors the real proxy
+/// so bodies with non-ASCII characters (e.g. IPA in dictionary entries)
+/// round-trip correctly instead of failing latin1 encoding.
 http.Response _text(String text) => http.Response(
       jsonEncode({
         'content': [
@@ -15,6 +17,7 @@ http.Response _text(String text) => http.Response(
         'stop_reason': 'end_turn',
       }),
       200,
+      headers: const {'content-type': 'application/json; charset=utf-8'},
     );
 
 const _chapter = Chapter(
@@ -109,7 +112,8 @@ void main() {
 
       expect(result.valueOrNull, 'Grounded answer.');
       final body = jsonDecode(captured.body) as Map<String, dynamic>;
-      final user = (body['messages'] as List).first['content'] as String;
+      final user =
+          ((body['messages'] as List).first as Map)['content'] as String;
       // Both passages are embedded, numbered, in the user turn.
       expect(user, contains('[1] The narrator is Ishmael.'));
       expect(user, contains('[2] Call me Ishmael.'));
@@ -130,7 +134,7 @@ void main() {
     final service = _service(
       MockClient(
         (req) async => http.Response(
-          jsonEncode({'content': [], 'stop_reason': 'refusal'}),
+          jsonEncode({'content': <Object>[], 'stop_reason': 'refusal'}),
           200,
         ),
       ),

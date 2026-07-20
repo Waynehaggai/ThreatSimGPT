@@ -5,6 +5,7 @@ import '../../../../core/di/repository_providers.dart';
 import '../../../../domain/entities/annotation.dart';
 import '../../../../domain/entities/bookmark.dart';
 import '../../../../domain/entities/enums.dart';
+import '../../../../domain/repositories/annotation_repository.dart';
 
 /// Highlights/notes for a book, reactive.
 final annotationsProvider = StreamProvider.family<List<Annotation>, String>((

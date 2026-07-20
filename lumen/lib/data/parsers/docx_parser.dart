@@ -146,8 +146,9 @@ class DocxParser implements DocumentParser {
 
   XmlDocument? _readXml(Archive archive, String path) {
     final file = archive.files.where((f) => f.name == path).firstOrNull;
-    if (file == null) return null;
-    return XmlDocument.parse(String.fromCharCodes(file.readBytes()));
+    final bytes = file?.readBytes();
+    if (bytes == null) return null;
+    return XmlDocument.parse(String.fromCharCodes(bytes));
   }
 
   String? _styleOf(XmlElement para) => para

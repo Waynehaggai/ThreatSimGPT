@@ -18,8 +18,10 @@ List<ContentBlock> parseHtmlToBlocks(String html, {int startOffset = 0}) {
   final blocks = <ContentBlock>[];
   var offset = startOffset;
 
-  void add(BlockType type, String text, {int level = 0}) {
-    final trimmed = _collapse(text);
+  void add(BlockType type, String text, {int level = 0, bool collapse = true}) {
+    // List blocks arrive pre-collapsed per item and joined with newlines, which
+    // must be preserved; collapsing would merge the items onto one line.
+    final trimmed = collapse ? _collapse(text) : text.trim();
     if (trimmed.isEmpty && type != BlockType.image) return;
     blocks.add(
       ContentBlock(type: type, text: trimmed, level: level, charOffset: offset),
@@ -48,7 +50,7 @@ List<ContentBlock> parseHtmlToBlocks(String html, {int startOffset = 0}) {
       case 'ul' || 'ol':
         final items = el.querySelectorAll('li')..forEach(seenListItems.add);
         final text = items.map((li) => _collapse(li.text)).join('\n');
-        add(BlockType.list, text);
+        add(BlockType.list, text, collapse: false);
       case 'li':
         // Standalone list items (not inside a captured ul/ol) become a list.
         if (!seenListItems.contains(el)) add(BlockType.list, el.text);

@@ -1,6 +1,5 @@
-import 'package:isar_community/isar.dart';
+import 'package:isar_community/isar.dart' hide Collection;
 
-import '../../core/error/exceptions.dart';
 import '../../core/error/failures.dart';
 import '../../core/result/result.dart';
 import '../../domain/entities/book.dart';

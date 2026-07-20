@@ -2,6 +2,7 @@
 ///
 /// These are pure Dart (no Flutter, no persistence annotations) so they can be
 /// referenced from any layer and unit-tested in isolation.
+library;
 
 /// The source format a book was imported from.
 enum BookFormat {

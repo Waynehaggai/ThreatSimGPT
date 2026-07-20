@@ -55,20 +55,26 @@ class FirestoreRemoteDataSource implements RemoteDataSource {
     String id,
     Map<String, dynamic> data,
   ) async {
-    await _collection(type).doc(id).set({
-      ...data,
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    await _collection(type).doc(id).set(
+      {
+        ...data,
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      SetOptions(merge: true),
+    );
   }
 
   @override
   Future<void> remove(SyncEntityType type, String id) async {
     // Tombstone rather than hard-delete, so the deletion syncs to other devices
     // and user data is never silently lost.
-    await _collection(type).doc(id).set({
-      'isDeleted': true,
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    await _collection(type).doc(id).set(
+      {
+        'isDeleted': true,
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      SetOptions(merge: true),
+    );
   }
 
   @override

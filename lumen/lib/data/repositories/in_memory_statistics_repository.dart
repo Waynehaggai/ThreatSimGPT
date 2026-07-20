@@ -15,9 +15,19 @@ class InMemoryStatisticsRepository implements StatisticsRepository {
   final _controller = StreamController<ReadingStats>.broadcast();
 
   @override
-  Stream<ReadingStats> watchStats() async* {
-    yield _stats;
-    yield* _controller.stream;
+  Stream<ReadingStats> watchStats() {
+    // Subscribe to updates synchronously on listen (before returning control to
+    // the caller) and emit the current snapshot, so an update recorded right
+    // after subscribing can't slip through the gap an `async*` generator leaves
+    // between yielding the snapshot and subscribing to the broadcast stream.
+    final out = StreamController<ReadingStats>();
+    StreamSubscription<ReadingStats>? sub;
+    out.onListen = () {
+      out.add(_stats);
+      sub = _controller.stream.listen(out.add, onError: out.addError);
+    };
+    out.onCancel = () async => sub?.cancel();
+    return out.stream;
   }
 
   @override

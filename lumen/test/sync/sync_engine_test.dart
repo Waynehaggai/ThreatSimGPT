@@ -6,6 +6,7 @@ import 'package:lumen/data/sync/sync_engine.dart';
 import 'package:lumen/data/sync/sync_queue_store.dart';
 import 'package:lumen/domain/entities/enums.dart';
 import 'package:lumen/domain/entities/sync_operation.dart';
+import 'package:lumen/domain/repositories/sync_repository.dart';
 
 /// In-memory queue store.
 class FakeQueueStore implements SyncQueueStore {

@@ -3,7 +3,6 @@
 //
 // Boots the app end-to-end (real DI bootstrap, in-memory/guest fallback when
 // Firebase isn't configured) and drives the offline guest flow into the library.
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';

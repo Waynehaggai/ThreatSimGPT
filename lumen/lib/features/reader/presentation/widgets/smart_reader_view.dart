@@ -66,7 +66,6 @@ class SmartReaderView extends StatefulWidget {
 class _SmartReaderViewState extends State<SmartReaderView> {
   late final List<ContentBlock> _blocks;
   late final List<String> _chapterIds;
-  late final int _totalChars;
 
   @override
   void initState() {
@@ -79,8 +78,6 @@ class _SmartReaderViewState extends State<SmartReaderView> {
         _chapterIds.add(chapter.id);
       }
     }
-    final last = _blocks.isEmpty ? null : _blocks.last;
-    _totalChars = last == null ? 1 : last.charOffset + (last.text?.length ?? 1);
   }
 
   int _charOffsetFor(double percent) {

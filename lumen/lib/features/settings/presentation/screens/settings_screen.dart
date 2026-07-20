@@ -107,12 +107,13 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.lock_outline_rounded),
             title: const Text('App lock'),
-            subtitle: Text(switch (
-                ref.watch(appLockControllerProvider).state.value.method) {
-              AppLockMethod.biometric => 'Fingerprint / Face ID',
-              AppLockMethod.pin => 'PIN',
-              AppLockMethod.none => 'Off',
-            }),
+            subtitle: Text(
+              switch (ref.watch(appLockControllerProvider).state.value.method) {
+                AppLockMethod.biometric => 'Fingerprint / Face ID',
+                AppLockMethod.pin => 'PIN',
+                AppLockMethod.none => 'Off',
+              },
+            ),
             trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => _configureLock(context, ref),
           ),
@@ -175,6 +176,7 @@ class SettingsScreen extends ConsumerWidget {
       ),
     );
     if (choice == null) return;
+    if (!context.mounted) return;
     if (choice == AppLockMethod.pin) {
       final pin = await _promptPin(context);
       if (pin == null) return;

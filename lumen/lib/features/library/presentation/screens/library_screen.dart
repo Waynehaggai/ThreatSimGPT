@@ -90,6 +90,7 @@ class LibraryScreen extends ConsumerWidget {
       allowMultiple: true,
     );
     if (picked == null) return;
+    if (!context.mounted) return;
 
     final messenger = ScaffoldMessenger.of(context);
     final importer = ref.read(importBookProvider);

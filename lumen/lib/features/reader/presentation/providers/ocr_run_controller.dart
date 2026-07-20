@@ -81,6 +81,9 @@ class OcrRunController {
         state.value = state.value.copyWith(status: OcrStatus.done);
         if (!completer.isCompleted) completer.complete();
       },
+      // Stop on the first error so a trailing onDone can't overwrite the
+      // error status with 'done'.
+      cancelOnError: true,
     );
     return completer.future;
   }

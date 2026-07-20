@@ -63,8 +63,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final decision = await ref.read(
       resumeDecisionProvider(widget.bookId).future,
     );
-    if (!mounted || !decision.promptUser || decision.remoteNewer == null)
+    if (!mounted || !decision.promptUser || decision.remoteNewer == null) {
       return;
+    }
     final accept = await ResumePrompt.show(
       context,
       remote: decision.remoteNewer!,
@@ -182,7 +183,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
       builder: (_) => const _LanguagePicker(),
     );
     if (lang == null || !mounted) return;
-    AiResultSheet.show(
+    await AiResultSheet.show(
       context,
       title: 'Translate → $lang',
       future: ref.read(aiServiceProvider).translate(text, targetLang: lang),
@@ -669,7 +670,6 @@ class _BottomBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final ui = ref.watch(readerControllerProvider(bookId));
     final content = ref.watch(readerContentProvider(bookId)).valueOrNull;
-    final settings = ref.watch(settingsProvider);
 
     final wordsRemaining =
         content == null ? 0 : (content.wordCount * (1 - ui.percent)).round();
