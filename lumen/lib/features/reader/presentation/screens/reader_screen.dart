@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/di/repository_providers.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/reading_theme.dart';
 import '../../../../domain/entities/annotation.dart';
@@ -19,6 +20,7 @@ import '../providers/tts_controller.dart';
 import '../providers/tts_providers.dart';
 import '../rendering/reader_typography.dart';
 import '../rendering/sentence_segmenter.dart';
+import '../widgets/ai_result_sheet.dart';
 import '../widgets/bookmarks_sheet.dart';
 import '../widgets/original_reader_view.dart';
 import '../widgets/resume_prompt.dart';
@@ -143,6 +145,25 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     _clearSelection();
   }
 
+  void _explainSelection() {
+    final sel = _pending;
+    if (sel == null) return;
+    final ai = ref.read(aiServiceProvider);
+    // Single word → definition; longer selection → explanation.
+    final isWord = !sel.text.trim().contains(RegExp(r'\s'));
+    final future = isWord
+        ? ai.defineWord(sel.text.trim()).then((r) => r.map((d) =>
+            '${d.word}${d.phonetic != null ? '  /${d.phonetic}/' : ''}\n\n'
+            '${d.meanings.map((m) => '• $m').join('\n')}'))
+        : ai.explainPassage(sel.text);
+    AiResultSheet.show(
+      context,
+      title: isWord ? 'Definition' : 'Explain',
+      future: future,
+    );
+    _clearSelection();
+  }
+
   Future<void> _addNote() async {
     final sel = _pending;
     if (sel == null) return;
@@ -247,6 +268,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                                 onNote: _addNote,
                                 onCopy: _copySelection,
                                 onDismiss: _clearSelection,
+                                onExplain:
+                                    ref.watch(aiServiceProvider).isEnabled
+                                        ? _explainSelection
+                                        : null,
                               ),
                             ),
                           if (ttsBarVisible(ttsState) && !ui.immersive)
@@ -373,6 +398,7 @@ class _TopBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final ui = ref.watch(readerControllerProvider(bookId));
     final controller = ref.read(annotationControllerProvider(bookId));
+    final aiEnabled = ref.watch(aiServiceProvider).isEnabled;
 
     return Material(
       color: palette.background.withValues(alpha: 0.96),
@@ -422,9 +448,14 @@ class _TopBar extends ConsumerWidget {
               iconColor: palette.text,
               onSelected: (value) {
                 if (value == 'export') _exportNotes(context, controller);
+                if (value == 'summarize') _summarizeChapter(context, ref);
               },
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'export', child: Text('Export notes')),
+              itemBuilder: (_) => [
+                const PopupMenuItem(value: 'export', child: Text('Export notes')),
+                if (aiEnabled)
+                  const PopupMenuItem(
+                      value: 'summarize',
+                      child: Text('Summarize chapter (AI)')),
               ],
             ),
           ],
@@ -447,6 +478,21 @@ class _TopBar extends ConsumerWidget {
       case null:
         break;
     }
+  }
+
+  void _summarizeChapter(BuildContext context, WidgetRef ref) {
+    final content = ref.read(readerContentProvider(bookId)).valueOrNull;
+    if (content == null || content.chapters.isEmpty) return;
+    final currentId = ref.read(readerControllerProvider(bookId)).chapterId;
+    final chapter = content.chapters.firstWhere(
+      (c) => c.id == currentId,
+      orElse: () => content.chapters.first,
+    );
+    AiResultSheet.show(
+      context,
+      title: 'Summary · ${chapter.title}',
+      future: ref.read(aiServiceProvider).summarizeChapter(chapter),
+    );
   }
 
   Future<void> _exportNotes(

@@ -8,6 +8,7 @@ import '../../data/parsers/plain_text_parser.dart';
 import '../../data/repositories/in_memory_annotation_repository.dart';
 import '../../data/repositories/in_memory_progress_repository.dart';
 import '../../data/repositories/in_memory_statistics_repository.dart';
+import '../../data/services/anthropic_ai_service.dart';
 import '../../data/services/file_import_service.dart';
 import '../../data/services/secure_security_service.dart';
 import '../../data/sync/noop_sync_repository.dart';
@@ -88,6 +89,18 @@ final statisticsRepositoryProvider = Provider<StatisticsRepository>(
 final readingStatsProvider = StreamProvider<ReadingStats>(
     (ref) => ref.watch(statisticsRepositoryProvider).watchStats());
 
-/// AI features default to the no‑op stub; swap in a real provider when an AI
-/// backend is configured (ROADMAP: Future).
-final aiServiceProvider = Provider<AiService>((ref) => const DisabledAiService());
+/// AI module configuration. `null` (the default) keeps AI features off. Provide
+/// an [AiConfig] pointing at your backend proxy — via a bootstrap override or a
+/// `--dart-define`-driven override — to enable them. NEVER embed an API key in
+/// the app; the proxy holds the key (see docs/AI_MODULE.md).
+final aiConfigProvider = Provider<AiConfig?>((ref) => null);
+
+/// The active [AiService]. Falls back to the no‑op stub until an [AiConfig] is
+/// supplied, so nothing breaks when AI is disabled.
+final aiServiceProvider = Provider<AiService>((ref) {
+  final config = ref.watch(aiConfigProvider);
+  if (config == null || !config.enabled) return const DisabledAiService();
+  final service = AnthropicAiService(config);
+  ref.onDispose(service.dispose);
+  return service;
+});

@@ -177,8 +177,20 @@ Status legend: ✅ done in the foundation · 🟡 partially scaffolded · ⬜ pl
 
 ## Future (post‑1.0)
 
+### AI module — started
+- ✅ `AnthropicAiService` (`AiService`) on Claude `claude-opus-4-8` via the
+  Messages API (raw HTTP through a **backend proxy** — no key in the app);
+  adaptive thinking for prose, structured outputs for dictionary/flashcards
+- ✅ Wired: chapter **summaries** (overflow menu) and selection **Explain /
+  Define** (selection toolbar), gated on `aiService.isEnabled`
+- ✅ DI gating via `aiConfigProvider` (off by default); unit‑tested with a mock
+  HTTP client (see docs/AI_MODULE.md)
+- 🟡 `translate`, `answerQuestion`, `generateFlashcards` implemented; UI entry
+  points + (for Q&A) passage retrieval/RAG are the next step
+- ⬜ Quizzes, mind maps, vocabulary builder, knowledge graphs, recommendations
+  (all map onto the same `AiService` interface)
+
+### Other post‑1.0
 Desktop & Web builds · Audiobooks · Family library · Book sharing ·
-Collaborative annotations · **AI module** (summaries, explain, dictionary,
-translation, Q&A, flashcards, quizzes, mind maps, vocabulary, knowledge graphs,
-recommendations — plug into `AiService`) · plugin architecture · reading
-challenges · social reading · reading memory timeline.
+Collaborative annotations · plugin architecture · reading challenges · social
+reading · reading memory timeline.
