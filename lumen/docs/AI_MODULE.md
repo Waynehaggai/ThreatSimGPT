@@ -15,7 +15,7 @@ without touching the app.
 | `translate` | Selection toolbar → 🌐 → language picker | Prose |
 | `answerAboutBook` | Reader overflow menu → "Ask about this book" (RAG chat panel) | Prose |
 | `answerQuestion` | (raw, non‑RAG; used as the empty‑passage fallback) | Prose |
-| `generateFlashcards` | (wired next) | Structured (Q/A cards) |
+| `generateFlashcards` | Reader overflow menu → "Flashcards" (swipeable flip‑card deck) | Structured (Q/A cards) |
 
 Roadmap capabilities (dictionary, translation, Q&A, flashcards, quizzes, mind
 maps, vocabulary, knowledge graphs, recommendations) all map onto this one

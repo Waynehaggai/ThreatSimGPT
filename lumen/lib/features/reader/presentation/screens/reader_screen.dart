@@ -22,6 +22,7 @@ import '../rendering/reader_typography.dart';
 import '../rendering/sentence_segmenter.dart';
 import '../widgets/ai_result_sheet.dart';
 import '../widgets/bookmarks_sheet.dart';
+import '../widgets/flashcards_sheet.dart';
 import '../widgets/original_reader_view.dart';
 import '../widgets/resume_prompt.dart';
 import '../widgets/selection_toolbar.dart';
@@ -471,6 +472,7 @@ class _TopBar extends ConsumerWidget {
               onSelected: (value) {
                 if (value == 'export') _exportNotes(context, controller);
                 if (value == 'summarize') _summarizeChapter(context, ref);
+                if (value == 'flashcards') _flashcards(context, ref);
                 if (value == 'ask') context.push(Routes.askPath(bookId));
               },
               itemBuilder: (_) => [
@@ -479,6 +481,10 @@ class _TopBar extends ConsumerWidget {
                   const PopupMenuItem(
                       value: 'summarize',
                       child: Text('Summarize chapter (AI)')),
+                if (aiEnabled)
+                  const PopupMenuItem(
+                      value: 'flashcards',
+                      child: Text('Flashcards (AI)')),
                 if (aiEnabled)
                   const PopupMenuItem(
                       value: 'ask',
@@ -519,6 +525,21 @@ class _TopBar extends ConsumerWidget {
       context,
       title: 'Summary · ${chapter.title}',
       future: ref.read(aiServiceProvider).summarizeChapter(chapter),
+    );
+  }
+
+  void _flashcards(BuildContext context, WidgetRef ref) {
+    final content = ref.read(readerContentProvider(bookId)).valueOrNull;
+    if (content == null || content.chapters.isEmpty) return;
+    final currentId = ref.read(readerControllerProvider(bookId)).chapterId;
+    final chapter = content.chapters.firstWhere(
+      (c) => c.id == currentId,
+      orElse: () => content.chapters.first,
+    );
+    FlashcardsSheet.show(
+      context,
+      title: 'Flashcards · ${chapter.title}',
+      future: ref.read(aiServiceProvider).generateFlashcards(chapter),
     );
   }
 
