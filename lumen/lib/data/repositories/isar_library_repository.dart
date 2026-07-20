@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import '../../core/error/exceptions.dart';
 import '../../core/error/failures.dart';

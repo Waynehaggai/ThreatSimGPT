@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 /// Derives a stable Isar [Id] (64‑bit int) from a domain string id (UUID).
 ///

@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import '../../domain/entities/enums.dart';
 import '../../domain/entities/reading_progress.dart';

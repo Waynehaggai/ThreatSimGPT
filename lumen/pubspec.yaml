@@ -23,8 +23,11 @@ dependencies:
 
   # ── Local persistence (offline-first) ────────────────────────────────────
   # Isar is the primary embedded DB (fast, indexed, reactive queries).
-  isar: ^3.1.0+1
-  isar_flutter_libs: ^3.1.0+1
+  # Uses the community fork: the original isar_generator 3.1.0 pins analyzer
+  # <6, which conflicts with modern freezed/riverpod codegen; isar_community
+  # 3.3.2 supports analyzer ^6 and coexists with them.
+  isar_community: ^3.3.2
+  isar_community_flutter_libs: ^3.3.2
   # Hive is used for lightweight, schema-less key/value caches.
   hive: ^2.2.3
   hive_flutter: ^1.1.0
@@ -84,7 +87,7 @@ dev_dependencies:
   build_runner: ^2.4.13
   freezed: ^2.5.7
   json_serializable: ^6.8.0
-  isar_generator: ^3.1.0+1
+  isar_community_generator: ^3.3.2
   riverpod_generator: ^2.4.3
 
   # ── Testing ──────────────────────────────────────────────────────────────
