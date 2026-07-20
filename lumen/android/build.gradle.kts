@@ -26,8 +26,8 @@ subprojects {
 // fail the AAR-metadata check. Applied reflectively to stay agnostic to the
 // Android Gradle Plugin's DSL version.
 subprojects {
-    afterEvaluate {
-        val androidExt = extensions.findByName("android") ?: return@afterEvaluate
+    fun forceCompileSdk36() {
+        val androidExt = extensions.findByName("android") ?: return
         val cls = androidExt.javaClass
         runCatching {
             cls.getMethod("setCompileSdk", Integer::class.java).invoke(androidExt, 36)
@@ -38,6 +38,9 @@ subprojects {
             }
         }
     }
+    // :app is already evaluated here (forced by evaluationDependsOn above), so
+    // registering afterEvaluate on it would throw; apply directly in that case.
+    if (state.executed) forceCompileSdk36() else afterEvaluate { forceCompileSdk36() }
 }
 
 tasks.register<Delete>("clean") {
