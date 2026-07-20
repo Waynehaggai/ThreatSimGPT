@@ -15,17 +15,17 @@ dependencies:
     sdk: flutter
 
   # ── State management & DI ────────────────────────────────────────────────
+  # Riverpod is used manually (Provider / NotifierProvider.family), not via
+  # codegen, so riverpod_annotation/riverpod_generator are intentionally absent.
   flutter_riverpod: ^2.5.1
-  riverpod_annotation: ^2.3.5
 
   # ── Navigation ───────────────────────────────────────────────────────────
   go_router: ^14.2.7
 
   # ── Local persistence (offline-first) ────────────────────────────────────
   # Isar is the primary embedded DB (fast, indexed, reactive queries).
-  # Uses the community fork: the original isar_generator 3.1.0 pins analyzer
-  # <6, which conflicts with modern freezed/riverpod codegen; isar_community
-  # 3.3.2 supports analyzer ^6 and coexists with them.
+  # Uses the maintained community fork; its generator supports the current
+  # analyzer/build toolchain, unlike the unmaintained original isar_generator.
   isar_community: ^3.3.2
   isar_community_flutter_libs: ^3.3.2
   # Hive is used for lightweight, schema-less key/value caches.
@@ -68,8 +68,6 @@ dependencies:
 
   # ── Utilities ────────────────────────────────────────────────────────────
   crypto: ^3.0.5
-  freezed_annotation: ^2.4.4
-  json_annotation: ^4.9.0
   uuid: ^4.5.1
   intl: ^0.20.2             # pinned to 0.20.2 by flutter_localizations (SDK)
   collection: ^1.18.0
@@ -83,12 +81,12 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^4.0.0
 
-  # ── Code generation ──────────────────────────────────────────────────────
-  build_runner: ^2.4.13
-  freezed: ^2.5.7
-  json_serializable: ^6.8.0
+  # ── Code generation (Isar only) ──────────────────────────────────────────
+  # build_runner is unpinned so pub can select the release whose build/
+  # analyzer/source_gen versions match isar_community_generator 3.3.2
+  # (build ^4, analyzer >=8, source_gen >=4).
+  build_runner: any
   isar_community_generator: ^3.3.2
-  riverpod_generator: ^2.4.3
 
   # ── Testing ──────────────────────────────────────────────────────────────
   mocktail: ^1.0.4
