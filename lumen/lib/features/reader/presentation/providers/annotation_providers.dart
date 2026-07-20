@@ -7,20 +7,25 @@ import '../../../../domain/entities/bookmark.dart';
 import '../../../../domain/entities/enums.dart';
 
 /// Highlights/notes for a book, reactive.
-final annotationsProvider =
-    StreamProvider.family<List<Annotation>, String>((ref, bookId) {
+final annotationsProvider = StreamProvider.family<List<Annotation>, String>((
+  ref,
+  bookId,
+) {
   return ref.watch(annotationRepositoryProvider).watchAnnotations(bookId);
 });
 
 /// Bookmarks for a book, reactive.
-final bookmarksProvider =
-    StreamProvider.family<List<Bookmark>, String>((ref, bookId) {
+final bookmarksProvider = StreamProvider.family<List<Bookmark>, String>((
+  ref,
+  bookId,
+) {
   return ref.watch(annotationRepositoryProvider).watchBookmarks(bookId);
 });
 
 final annotationControllerProvider =
     Provider.family<AnnotationController, String>(
-        (ref, bookId) => AnnotationController(ref, bookId));
+  (ref, bookId) => AnnotationController(ref, bookId),
+);
 
 /// Imperative annotation actions for the reader UI.
 class AnnotationController {
@@ -40,17 +45,19 @@ class AnnotationController {
     AnnotationType type = AnnotationType.highlight,
   }) {
     final now = DateTime.now();
-    return _repo.saveAnnotation(Annotation(
-      id: _uuid.v4(),
-      bookId: bookId,
-      type: type,
-      createdAt: now,
-      updatedAt: now,
-      selectedText: text,
-      colorValue: colorValue,
-      startOffset: start,
-      endOffset: end,
-    ));
+    return _repo.saveAnnotation(
+      Annotation(
+        id: _uuid.v4(),
+        bookId: bookId,
+        type: type,
+        createdAt: now,
+        updatedAt: now,
+        selectedText: text,
+        colorValue: colorValue,
+        startOffset: start,
+        endOffset: end,
+      ),
+    );
   }
 
   Future<void> addNote({
@@ -60,17 +67,19 @@ class AnnotationController {
     required String noteText,
   }) {
     final now = DateTime.now();
-    return _repo.saveAnnotation(Annotation(
-      id: _uuid.v4(),
-      bookId: bookId,
-      type: AnnotationType.note,
-      createdAt: now,
-      updatedAt: now,
-      selectedText: selectedText,
-      noteText: noteText,
-      startOffset: start,
-      endOffset: end,
-    ));
+    return _repo.saveAnnotation(
+      Annotation(
+        id: _uuid.v4(),
+        bookId: bookId,
+        type: AnnotationType.note,
+        createdAt: now,
+        updatedAt: now,
+        selectedText: selectedText,
+        noteText: noteText,
+        startOffset: start,
+        endOffset: end,
+      ),
+    );
   }
 
   Future<void> deleteAnnotation(String id) => _repo.deleteAnnotation(id);
@@ -82,16 +91,18 @@ class AnnotationController {
     String? chapterTitle,
     String? previewText,
   }) {
-    return _repo.saveBookmark(Bookmark(
-      id: _uuid.v4(),
-      bookId: bookId,
-      createdAt: DateTime.now(),
-      label: label,
-      percent: percent,
-      charOffset: charOffset,
-      chapterTitle: chapterTitle,
-      previewText: previewText,
-    ));
+    return _repo.saveBookmark(
+      Bookmark(
+        id: _uuid.v4(),
+        bookId: bookId,
+        createdAt: DateTime.now(),
+        label: label,
+        percent: percent,
+        charOffset: charOffset,
+        chapterTitle: chapterTitle,
+        previewText: previewText,
+      ),
+    );
   }
 
   Future<void> deleteBookmark(String id) => _repo.deleteBookmark(id);

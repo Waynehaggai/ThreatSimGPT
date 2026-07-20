@@ -43,9 +43,10 @@ class _OcrReviewScreenState extends ConsumerState<OcrReviewScreen> {
     }
   }
 
-  TextEditingController _editorFor(OcrPageResult page) =>
-      _editors.putIfAbsent(page.pageIndex,
-          () => TextEditingController(text: page.text));
+  TextEditingController _editorFor(OcrPageResult page) => _editors.putIfAbsent(
+        page.pageIndex,
+        () => TextEditingController(text: page.text),
+      );
 
   Future<void> _save(List<OcrPageResult> pages) async {
     final corrected = [
@@ -64,7 +65,8 @@ class _OcrReviewScreenState extends ConsumerState<OcrReviewScreen> {
     final book = (await repo.getBook(widget.bookId)).valueOrNull;
     if (book != null) {
       await repo.updateBook(
-          book.copyWith(needsOcr: false, hasSmartContent: true));
+        book.copyWith(needsOcr: false, hasSmartContent: true),
+      );
     }
     if (mounted) context.pop();
   }
@@ -93,12 +95,18 @@ class _OcrReviewScreenState extends ConsumerState<OcrReviewScreen> {
               if (state.status == OcrStatus.error)
                 Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Text('OCR failed: ${state.error}',
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.error)),
+                  child: Text(
+                    'OCR failed: ${state.error}',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
                 ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     Expanded(
@@ -128,14 +136,16 @@ class _OcrReviewScreenState extends ConsumerState<OcrReviewScreen> {
                           children: [
                             Row(
                               children: [
-                                Text('Page ${page.pageIndex + 1}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge),
+                                Text(
+                                  'Page ${page.pageIndex + 1}',
+                                  style: Theme.of(context).textTheme.labelLarge,
+                                ),
                                 const SizedBox(width: 8),
                                 if (low)
-                                  const Icon(Icons.warning_amber_rounded,
-                                      size: 16),
+                                  const Icon(
+                                    Icons.warning_amber_rounded,
+                                    size: 16,
+                                  ),
                               ],
                             ),
                             const SizedBox(height: 8),

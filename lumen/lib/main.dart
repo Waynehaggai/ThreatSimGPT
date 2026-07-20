@@ -36,10 +36,5 @@ Future<void> main() async {
 
   final overrides = await buildProductionOverrides();
 
-  runApp(
-    ProviderScope(
-      overrides: overrides,
-      child: const LumenApp(),
-    ),
-  );
+  runApp(ProviderScope(overrides: overrides, child: const LumenApp()));
 }

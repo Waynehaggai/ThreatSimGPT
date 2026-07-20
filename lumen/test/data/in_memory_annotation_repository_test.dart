@@ -29,12 +29,15 @@ void main() {
     expect(list, hasLength(1));
   });
 
-  test('deleting tombstones the annotation (excluded from the stream)', () async {
-    await repo.saveAnnotation(ann('a1'));
-    await repo.deleteAnnotation('a1');
-    final list = await repo.watchAnnotations('b1').first;
-    expect(list, isEmpty);
-  });
+  test(
+    'deleting tombstones the annotation (excluded from the stream)',
+    () async {
+      await repo.saveAnnotation(ann('a1'));
+      await repo.deleteAnnotation('a1');
+      final list = await repo.watchAnnotations('b1').first;
+      expect(list, isEmpty);
+    },
+  );
 
   test('search matches highlighted text and note bodies', () async {
     await repo.saveAnnotation(ann('a1', text: 'the quick brown fox'));
@@ -46,12 +49,7 @@ void main() {
   });
 
   test('bookmarks save, stream, and tombstone on delete', () async {
-    final bm = Bookmark(
-      id: 'bm1',
-      bookId: 'b1',
-      createdAt: now,
-      percent: 0.4,
-    );
+    final bm = Bookmark(id: 'bm1', bookId: 'b1', createdAt: now, percent: 0.4);
     await repo.saveBookmark(bm);
     expect(await repo.watchBookmarks('b1').first, hasLength(1));
 

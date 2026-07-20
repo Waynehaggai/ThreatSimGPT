@@ -39,7 +39,9 @@ class IsarStatisticsRepository implements StatisticsRepository {
       await _enqueue();
       return const Result.success(null);
     } on Object catch (e) {
-      return Result.failure(StorageFailure('Failed to record session.', cause: e));
+      return Result.failure(
+        StorageFailure('Failed to record session.', cause: e),
+      );
     }
   }
 

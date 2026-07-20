@@ -37,8 +37,11 @@ void main() {
     sw.stop();
 
     expect(result, isNotEmpty);
-    expect(sw.elapsedMilliseconds, lessThan(1000),
-        reason: 'query took ${sw.elapsedMilliseconds}ms');
+    expect(
+      sw.elapsedMilliseconds,
+      lessThan(1000),
+      reason: 'query took ${sw.elapsedMilliseconds}ms',
+    );
   });
 
   test('paginating a very long document is fast', () {
@@ -50,8 +53,11 @@ void main() {
     sw.stop();
 
     expect(pages, isNotEmpty);
-    expect(sw.elapsedMilliseconds, lessThan(500),
-        reason: 'pagination took ${sw.elapsedMilliseconds}ms');
+    expect(
+      sw.elapsedMilliseconds,
+      lessThan(500),
+      reason: 'pagination took ${sw.elapsedMilliseconds}ms',
+    );
   });
 
   test('fastHash yields no collisions across 100k ids', () {

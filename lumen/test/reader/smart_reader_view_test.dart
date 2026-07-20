@@ -8,7 +8,9 @@ import 'package:lumen/features/reader/presentation/rendering/reader_typography.d
 import 'package:lumen/features/reader/presentation/widgets/smart_reader_view.dart';
 
 void main() {
-  testWidgets('renders reflowed content and reports a position', (tester) async {
+  testWidgets('renders reflowed content and reports a position', (
+    tester,
+  ) async {
     var reported = false;
     final content = sampleBookContent('b1', 'Demo Book');
     final typo = ReaderTypography(

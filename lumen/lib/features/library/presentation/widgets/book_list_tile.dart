@@ -23,11 +23,13 @@ class BookListTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(6),
         ),
         alignment: Alignment.center,
-        child: Icon(Icons.menu_book_rounded,
-            color: theme.colorScheme.primary, size: 22),
+        child: Icon(
+          Icons.menu_book_rounded,
+          color: theme.colorScheme.primary,
+          size: 22,
+        ),
       ),
-      title: Text(book.title,
-          maxLines: 1, overflow: TextOverflow.ellipsis),
+      title: Text(book.title, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text(
         '${book.author}  ·  ${book.format.name.toUpperCase()}'
         '${book.pageCount > 0 ? '  ·  ${book.pageCount} pp' : ''}',
@@ -36,8 +38,10 @@ class BookListTile extends StatelessWidget {
       ),
       trailing: book.isFavorite
           ? const Icon(Icons.favorite_rounded, size: 18)
-          : Text('${(book.progressPercent * 100).round()}%',
-              style: theme.textTheme.labelSmall),
+          : Text(
+              '${(book.progressPercent * 100).round()}%',
+              style: theme.textTheme.labelSmall,
+            ),
     );
   }
 }

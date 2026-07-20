@@ -24,8 +24,7 @@ class SearchScreen extends ConsumerWidget {
             hintText: 'Search books, highlights, notes…',
             border: InputBorder.none,
           ),
-          onChanged: (v) =>
-              ref.read(searchQueryProvider.notifier).state = v,
+          onChanged: (v) => ref.read(searchQueryProvider.notifier).state = v,
         ),
       ),
       body: query.trim().isEmpty
@@ -43,11 +42,12 @@ class SearchScreen extends ConsumerWidget {
                             children: [
                               for (final book in list)
                                 ListTile(
-                                  leading:
-                                      const Icon(Icons.menu_book_outlined),
-                                  title: Text(book.title,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis),
+                                  leading: const Icon(Icons.menu_book_outlined),
+                                  title: Text(
+                                    book.title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                   subtitle: Text(book.author),
                                   onTap: () =>
                                       context.push(Routes.readerPath(book.id)),
@@ -81,9 +81,11 @@ class SearchScreen extends ConsumerWidget {
                                   ),
                                   subtitle: a.noteText != null &&
                                           a.selectedText.isNotEmpty
-                                      ? Text(a.noteText!,
+                                      ? Text(
+                                          a.noteText!,
                                           maxLines: 1,
-                                          overflow: TextOverflow.ellipsis)
+                                          overflow: TextOverflow.ellipsis,
+                                        )
                                       : null,
                                   onTap: () =>
                                       context.push(Routes.readerPath(a.bookId)),
@@ -110,11 +112,13 @@ class _Section extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-          child: Text(title.toUpperCase(),
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    letterSpacing: 1.2,
-                  )),
+          child: Text(
+            title.toUpperCase(),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                  letterSpacing: 1.2,
+                ),
+          ),
         ),
         child,
       ],
@@ -128,8 +132,10 @@ class _Hint extends StatelessWidget {
   Widget build(BuildContext context) => const Center(
         child: Padding(
           padding: EdgeInsets.all(32),
-          child: Text('Start typing to search your library and notes.',
-              textAlign: TextAlign.center),
+          child: Text(
+            'Start typing to search your library and notes.',
+            textAlign: TextAlign.center,
+          ),
         ),
       );
 }
@@ -149,8 +155,10 @@ class _Empty extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Text(message,
-            style: TextStyle(color: Theme.of(context).colorScheme.outline)),
+        child: Text(
+          message,
+          style: TextStyle(color: Theme.of(context).colorScheme.outline),
+        ),
       );
 }
 
@@ -160,7 +168,9 @@ class _ErrorText extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.all(16),
-        child: Text(message,
-            style: TextStyle(color: Theme.of(context).colorScheme.error)),
+        child: Text(
+          message,
+          style: TextStyle(color: Theme.of(context).colorScheme.error),
+        ),
       );
 }

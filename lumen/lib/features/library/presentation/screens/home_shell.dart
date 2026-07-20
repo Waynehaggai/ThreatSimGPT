@@ -11,8 +11,12 @@ class HomeShell extends StatelessWidget {
   final Widget child;
 
   static const _destinations = [
-    (Routes.library, Icons.local_library_outlined, Icons.local_library,
-        'Library'),
+    (
+      Routes.library,
+      Icons.local_library_outlined,
+      Icons.local_library,
+      'Library',
+    ),
     (Routes.statistics, Icons.insights_outlined, Icons.insights, 'Stats'),
     (Routes.settings, Icons.settings_outlined, Icons.settings, 'Settings'),
   ];

@@ -27,9 +27,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     // Router redirect handles navigation on success; show failures inline.
     final failure = result.failureOrNull;
     if (failure != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(failure.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(failure.message)));
     }
   }
 
@@ -46,29 +46,33 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Spacer(flex: 2),
-              const Icon(Icons.auto_stories_rounded,
-                  size: 72, color: AppColors.seed),
+              const Icon(
+                Icons.auto_stories_rounded,
+                size: 72,
+                color: AppColors.seed,
+              ),
               const SizedBox(height: 24),
               Text(
                 AppConstants.appName,
                 textAlign: TextAlign.center,
-                style: theme.textTheme.displaySmall
-                    ?.copyWith(fontWeight: FontWeight.w600),
+                style: theme.textTheme.displaySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 AppConstants.tagline,
                 textAlign: TextAlign.center,
-                style: theme.textTheme.bodyLarge
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
               const Spacer(flex: 3),
               _SignInButton(
                 icon: Icons.g_mobiledata_rounded,
                 label: 'Continue with Google',
-                onPressed: _busy
-                    ? null
-                    : () => _run(controller.signInWithGoogle),
+                onPressed:
+                    _busy ? null : () => _run(controller.signInWithGoogle),
               ),
               const SizedBox(height: 12),
               _SignInButton(
@@ -79,7 +83,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               ),
               const SizedBox(height: 12),
               FilledButton.tonalIcon(
-                onPressed: _busy ? null : () => _run(controller.continueAsGuest),
+                onPressed:
+                    _busy ? null : () => _run(controller.continueAsGuest),
                 icon: const Icon(Icons.person_outline_rounded),
                 label: const Text('Continue as guest'),
               ),
@@ -88,8 +93,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 'Guest mode works fully offline. Your library, notes and '
                 'progress move with you when you create an account.',
                 textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
               const Spacer(flex: 2),
               if (_busy) const LinearProgressIndicator(),
@@ -120,8 +126,7 @@ class _SignInButton extends StatelessWidget {
       label: Text(label),
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(52),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
   }

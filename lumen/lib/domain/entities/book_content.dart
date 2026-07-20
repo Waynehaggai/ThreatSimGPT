@@ -16,8 +16,7 @@ class BookContent {
   final int wordCount;
 
   /// Flattened block stream across all chapters (reader iteration order).
-  Iterable<ContentBlock> get blocks =>
-      chapters.expand((c) => c.blocks);
+  Iterable<ContentBlock> get blocks => chapters.expand((c) => c.blocks);
 }
 
 /// A table-of-contents entry plus the content it owns.

@@ -60,12 +60,16 @@ class SecureSecurityService implements SecurityService {
   }
 
   @override
-  Future<Result<void>> setLockMethod(AppLockMethod method, {String? pin}) async {
+  Future<Result<void>> setLockMethod(
+    AppLockMethod method, {
+    String? pin,
+  }) async {
     try {
       if (method == AppLockMethod.pin) {
         if (pin == null || pin.length < 4) {
           return const Result.failure(
-              ValidationFailure('PIN must be at least 4 digits.'));
+            ValidationFailure('PIN must be at least 4 digits.'),
+          );
         }
         final salt = _randomBytesBase64(16);
         _cachedPinSalt = salt;
@@ -83,7 +87,8 @@ class SecureSecurityService implements SecurityService {
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(
-          StorageFailure('Failed to set lock method.', cause: e));
+        StorageFailure('Failed to set lock method.', cause: e),
+      );
     }
   }
 
@@ -115,7 +120,8 @@ class SecureSecurityService implements SecurityService {
       return Result.success(key);
     } on Object catch (e) {
       return Result.failure(
-          StorageFailure('Failed to access encryption key.', cause: e));
+        StorageFailure('Failed to access encryption key.', cause: e),
+      );
     }
   }
 

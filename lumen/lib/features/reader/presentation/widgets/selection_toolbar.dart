@@ -43,10 +43,7 @@ class SelectionToolbar extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             for (final color in AppColors.highlightSwatches)
-              _Swatch(
-                color: color,
-                onTap: () => onHighlight(color.toARGB32()),
-              ),
+              _Swatch(color: color, onTap: () => onHighlight(color.toARGB32())),
             const SizedBox(width: 4),
             IconButton(
               tooltip: 'Underline',

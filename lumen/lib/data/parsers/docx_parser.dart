@@ -27,27 +27,34 @@ class DocxParser implements DocumentParser {
   @override
   Future<Result<DocumentMetadata>> extractMetadata(String filePath) async {
     try {
-      final archive =
-          ZipDecoder().decodeBytes(await File(filePath).readAsBytes());
+      final archive = ZipDecoder().decodeBytes(
+        await File(filePath).readAsBytes(),
+      );
       final core = _readXml(archive, 'docProps/core.xml');
       final doc = _readXml(archive, 'word/document.xml');
 
-      final title = core?.findAllElements('title', namespace: '*').firstOrNull?.innerText;
-      final author =
-          core?.findAllElements('creator', namespace: '*').firstOrNull?.innerText;
+      final title =
+          core?.findAllElements('title', namespace: '*').firstOrNull?.innerText;
+      final author = core
+          ?.findAllElements('creator', namespace: '*')
+          .firstOrNull
+          ?.innerText;
       final words = doc == null
           ? 0
-          : doc
-              .findAllElements('t', namespace: '*')
-              .fold<int>(0, (n, e) => n + e.innerText.split(RegExp(r'\s+')).length);
+          : doc.findAllElements('t', namespace: '*').fold<int>(
+                0,
+                (n, e) => n + e.innerText.split(RegExp(r'\s+')).length,
+              );
 
-      return Result.success(DocumentMetadata(
-        title: (title?.isNotEmpty ?? false)
-            ? title!
-            : p.basenameWithoutExtension(filePath),
-        author: (author?.isNotEmpty ?? false) ? author! : 'Unknown',
-        pageCount: (words / 300).ceil().clamp(1, 1 << 30),
-      ));
+      return Result.success(
+        DocumentMetadata(
+          title: (title?.isNotEmpty ?? false)
+              ? title!
+              : p.basenameWithoutExtension(filePath),
+          author: (author?.isNotEmpty ?? false) ? author! : 'Unknown',
+          pageCount: (words / 300).ceil().clamp(1, 1 << 30),
+        ),
+      );
     } on Object catch (e) {
       return Result.failure(DocumentFailure('Could not read DOCX.', cause: e));
     }
@@ -56,12 +63,14 @@ class DocxParser implements DocumentParser {
   @override
   Future<Result<BookContent>> extractContent(Book book) async {
     try {
-      final archive =
-          ZipDecoder().decodeBytes(await File(book.filePath).readAsBytes());
+      final archive = ZipDecoder().decodeBytes(
+        await File(book.filePath).readAsBytes(),
+      );
       final doc = _readXml(archive, 'word/document.xml');
       if (doc == null) {
         return const Result.failure(
-            DocumentFailure('DOCX has no document body.'));
+          DocumentFailure('DOCX has no document body.'),
+        );
       }
 
       final blocks = <ContentBlock>[];
@@ -71,8 +80,9 @@ class DocxParser implements DocumentParser {
       void flushList() {
         if (pendingList.isEmpty) return;
         final text = pendingList.join('\n');
-        blocks.add(ContentBlock(
-            type: BlockType.list, text: text, charOffset: offset));
+        blocks.add(
+          ContentBlock(type: BlockType.list, text: text, charOffset: offset),
+        );
         offset += text.length + 1;
         pendingList.clear();
       }
@@ -95,28 +105,40 @@ class DocxParser implements DocumentParser {
 
         if (style != null && style.toLowerCase().startsWith('heading')) {
           final level = int.tryParse(style.replaceAll(RegExp(r'\D'), '')) ?? 1;
-          blocks.add(ContentBlock(
-            type: BlockType.heading,
-            text: text,
-            level: (level - 1).clamp(0, 5),
-            charOffset: offset,
-          ));
+          blocks.add(
+            ContentBlock(
+              type: BlockType.heading,
+              text: text,
+              level: (level - 1).clamp(0, 5),
+              charOffset: offset,
+            ),
+          );
         } else {
-          blocks.add(ContentBlock(
-              type: BlockType.paragraph, text: text, charOffset: offset));
+          blocks.add(
+            ContentBlock(
+              type: BlockType.paragraph,
+              text: text,
+              charOffset: offset,
+            ),
+          );
         }
         offset += text.length + 1;
       }
       flushList();
 
-      return Result.success(BookContent(
-        bookId: book.id,
-        chapters: [
-          Chapter(id: 'ch-0', title: book.title, order: 0, blocks: blocks),
-        ],
-        generatedAt: DateTime.now(),
-        wordCount: blocks.fold(0, (n, b) => n + (b.text?.split(' ').length ?? 0)),
-      ));
+      return Result.success(
+        BookContent(
+          bookId: book.id,
+          chapters: [
+            Chapter(id: 'ch-0', title: book.title, order: 0, blocks: blocks),
+          ],
+          generatedAt: DateTime.now(),
+          wordCount: blocks.fold(
+            0,
+            (n, b) => n + (b.text?.split(' ').length ?? 0),
+          ),
+        ),
+      );
     } on Object catch (e) {
       return Result.failure(DocumentFailure('Could not parse DOCX.', cause: e));
     }

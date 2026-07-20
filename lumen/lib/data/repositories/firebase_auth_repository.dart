@@ -34,17 +34,24 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<Result<UserAccount>> signInWithEmail(String email, String password) =>
-      _guard(() => _auth.signInWithEmailAndPassword(
-            email: email.trim(),
-            password: password,
-          ));
+      _guard(
+        () => _auth.signInWithEmailAndPassword(
+          email: email.trim(),
+          password: password,
+        ),
+      );
 
   @override
-  Future<Result<UserAccount>> registerWithEmail(String email, String password) =>
-      _guard(() => _auth.createUserWithEmailAndPassword(
-            email: email.trim(),
-            password: password,
-          ));
+  Future<Result<UserAccount>> registerWithEmail(
+    String email,
+    String password,
+  ) =>
+      _guard(
+        () => _auth.createUserWithEmailAndPassword(
+          email: email.trim(),
+          password: password,
+        ),
+      );
 
   @override
   Future<Result<UserAccount>> signInWithGoogle() async {
@@ -97,7 +104,8 @@ class FirebaseAuthRepository implements AuthRepository {
     final user = _auth.currentUser;
     if (user == null || !user.isAnonymous) {
       return const Result.failure(
-          AuthFailure('No anonymous session to upgrade.'));
+        AuthFailure('No anonymous session to upgrade.'),
+      );
     }
     try {
       final credential = fb.EmailAuthProvider.credential(
@@ -108,7 +116,9 @@ class FirebaseAuthRepository implements AuthRepository {
       final result = await user.linkWithCredential(credential);
       return Result.success(_toAccount(result.user)!);
     } on Object catch (e) {
-      return Result.failure(AuthFailure('Could not upgrade account.', cause: e));
+      return Result.failure(
+        AuthFailure('Could not upgrade account.', cause: e),
+      );
     }
   }
 
@@ -118,7 +128,9 @@ class FirebaseAuthRepository implements AuthRepository {
       await _auth.sendPasswordResetEmail(email: email.trim());
       return const Result.success(null);
     } on Object catch (e) {
-      return Result.failure(AuthFailure('Could not send reset email.', cause: e));
+      return Result.failure(
+        AuthFailure('Could not send reset email.', cause: e),
+      );
     }
   }
 

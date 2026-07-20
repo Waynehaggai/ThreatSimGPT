@@ -36,8 +36,8 @@ class IsarDatabase {
     final existing = _instance;
     if (existing != null) return existing;
 
-    final dir = directoryOverride ??
-        (await getApplicationDocumentsDirectory()).path;
+    final dir =
+        directoryOverride ?? (await getApplicationDocumentsDirectory()).path;
 
     final isar = await Isar.open(
       [

@@ -85,13 +85,19 @@ class _SmartReaderViewState extends State<SmartReaderView> {
 
   int _charOffsetFor(double percent) {
     if (_blocks.isEmpty) return 0;
-    final index = (percent * (_blocks.length - 1)).round().clamp(0, _blocks.length - 1);
+    final index = (percent * (_blocks.length - 1)).round().clamp(
+          0,
+          _blocks.length - 1,
+        );
     return _blocks[index].charOffset;
   }
 
   String? _chapterFor(double percent) {
     if (_chapterIds.isEmpty) return null;
-    final index = (percent * (_chapterIds.length - 1)).round().clamp(0, _chapterIds.length - 1);
+    final index = (percent * (_chapterIds.length - 1)).round().clamp(
+          0,
+          _chapterIds.length - 1,
+        );
     return _chapterIds[index];
   }
 
@@ -136,8 +142,10 @@ class _SmartReaderViewState extends State<SmartReaderView> {
 
         return _PaginatedScroll(
           // Rebuild the controller only when the pagination actually changes.
-          key: ValueKey('${constraints.maxWidth}x${constraints.maxHeight}'
-              '-${widget.typography.settings.fontSizeSp}-${ranges.length}'),
+          key: ValueKey(
+            '${constraints.maxWidth}x${constraints.maxHeight}'
+            '-${widget.typography.settings.fontSizeSp}-${ranges.length}',
+          ),
           blocks: _blocks,
           ranges: ranges,
           typography: widget.typography,
@@ -190,8 +198,10 @@ class _PaginatedScrollState extends State<_PaginatedScroll> {
   void initState() {
     super.initState();
     final count = widget.ranges.length;
-    final initialPage =
-        (widget.initialPercent * (count - 1)).round().clamp(0, count - 1);
+    final initialPage = (widget.initialPercent * (count - 1)).round().clamp(
+          0,
+          count - 1,
+        );
     _controller = PageController(initialPage: initialPage);
   }
 
@@ -220,8 +230,10 @@ class _PaginatedScrollState extends State<_PaginatedScroll> {
                 BlockView(
                   block: widget.blocks[i],
                   typography: widget.typography,
-                  annotations:
-                      annotationsForBlock(widget.annotations, widget.blocks[i]),
+                  annotations: annotationsForBlock(
+                    widget.annotations,
+                    widget.blocks[i],
+                  ),
                   onSelect: widget.onSelect,
                 ),
                 SizedBox(height: widget.typography.blockSpacing),
@@ -302,7 +314,10 @@ class _ContinuousScrollState extends State<_ContinuousScroll> {
         child: BlockView(
           block: widget.blocks[i],
           typography: widget.typography,
-          annotations: annotationsForBlock(widget.annotations, widget.blocks[i]),
+          annotations: annotationsForBlock(
+            widget.annotations,
+            widget.blocks[i],
+          ),
           onSelect: widget.onSelect,
         ),
       ),

@@ -35,7 +35,10 @@ void main() {
   });
 
   test('caption is smaller than body', () {
-    final typo = ReaderTypography(const ReadingSettings(fontSizeSp: 20), palette);
+    final typo = ReaderTypography(
+      const ReadingSettings(fontSizeSp: 20),
+      palette,
+    );
     expect(typo.caption.fontSize, lessThan(20));
   });
 }

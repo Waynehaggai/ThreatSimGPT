@@ -44,13 +44,18 @@ class NoopRemoteDataSource implements RemoteDataSource {
   const NoopRemoteDataSource();
 
   @override
-  Future<void> push(SyncEntityType type, String id, Map<String, dynamic> data) async {}
+  Future<void> push(
+    SyncEntityType type,
+    String id,
+    Map<String, dynamic> data,
+  ) async {}
 
   @override
   Future<void> remove(SyncEntityType type, String id) async {}
 
   @override
-  Future<String> uploadBookFile(String bookId, String localPath) async => localPath;
+  Future<String> uploadBookFile(String bookId, String localPath) async =>
+      localPath;
 
   @override
   Future<List<RemoteChange>> pullSince(DateTime? since) async => const [];

@@ -32,8 +32,7 @@ class ResolveResumePoint implements UseCase<ResumeDecision, String> {
     // Offline or no remote is fine — just resume locally.
     final remote = remoteResult.valueOrNull;
 
-    if (remote != null &&
-        (local == null || local.isSupersededBy(remote))) {
+    if (remote != null && (local == null || local.isSupersededBy(remote))) {
       return Result.success(
         ResumeDecision(local: local, remoteNewer: remote, promptUser: true),
       );
@@ -44,11 +43,7 @@ class ResolveResumePoint implements UseCase<ResumeDecision, String> {
 
 /// Outcome of [ResolveResumePoint].
 class ResumeDecision {
-  const ResumeDecision({
-    this.local,
-    this.remoteNewer,
-    this.promptUser = false,
-  });
+  const ResumeDecision({this.local, this.remoteNewer, this.promptUser = false});
 
   final ReadingProgress? local;
   final ReadingProgress? remoteNewer;

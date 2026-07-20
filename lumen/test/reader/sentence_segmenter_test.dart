@@ -6,8 +6,11 @@ void main() {
   group('splitSentences', () {
     test('splits on . ! ? followed by space or end', () {
       final spans = splitSentences('Hello world. How are you? Fine!');
-      expect(spans.map((s) => s.text).toList(),
-          ['Hello world.', 'How are you?', 'Fine!']);
+      expect(spans.map((s) => s.text).toList(), [
+        'Hello world.',
+        'How are you?',
+        'Fine!',
+      ]);
     });
 
     test('local offsets bound each sentence', () {
@@ -38,13 +41,30 @@ void main() {
       const content = BookContent(
         bookId: 'b',
         chapters: [
-          Chapter(id: 'c0', title: 'One', order: 0, blocks: [
-            ContentBlock(type: BlockType.paragraph, text: 'A. B.', charOffset: 0),
-          ]),
-          Chapter(id: 'c1', title: 'Two', order: 1, blocks: [
-            ContentBlock(
-                type: BlockType.paragraph, text: 'C.', charOffset: 100),
-          ]),
+          Chapter(
+            id: 'c0',
+            title: 'One',
+            order: 0,
+            blocks: [
+              ContentBlock(
+                type: BlockType.paragraph,
+                text: 'A. B.',
+                charOffset: 0,
+              ),
+            ],
+          ),
+          Chapter(
+            id: 'c1',
+            title: 'Two',
+            order: 1,
+            blocks: [
+              ContentBlock(
+                type: BlockType.paragraph,
+                text: 'C.',
+                charOffset: 100,
+              ),
+            ],
+          ),
         ],
       );
 

@@ -34,9 +34,10 @@ ReadingProgress? progressFromRemote(RemoteChange change) {
 /// documents (tracked follow-up); until then they are skipped rather than
 /// written from partial data, so a pull can never clobber richer local records.
 class IsarLocalMergeSink implements LocalMergeSink {
-  IsarLocalMergeSink(this._isar,
-      {ConflictResolver resolver = const ConflictResolver()})
-      : _resolver = resolver;
+  IsarLocalMergeSink(
+    this._isar, {
+    ConflictResolver resolver = const ConflictResolver(),
+  }) : _resolver = resolver;
 
   final Isar _isar;
   final ConflictResolver _resolver;

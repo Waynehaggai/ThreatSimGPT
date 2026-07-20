@@ -15,8 +15,9 @@ class FakeTts implements TtsService {
   double? lastSpeed;
 
   void emitState(TtsState s) => _state.add(s);
-  void emitSentence(int index) =>
-      _progress.add(TtsProgress(sentenceIndex: index, charStart: 0, charEnd: 1));
+  void emitSentence(int index) => _progress.add(
+        TtsProgress(sentenceIndex: index, charStart: 0, charEnd: 1),
+      );
 
   @override
   Stream<TtsState> get stateStream => _state.stream;
@@ -24,7 +25,10 @@ class FakeTts implements TtsService {
   Stream<TtsProgress> get progressStream => _progress.stream;
 
   @override
-  Future<Result<void>> speak(List<String> sentences, {int startIndex = 0}) async {
+  Future<Result<void>> speak(
+    List<String> sentences, {
+    int startIndex = 0,
+  }) async {
     spokenBatches.add(sentences.join('|'));
     lastStartIndex = startIndex;
     return const Result.success(null);
@@ -67,21 +71,26 @@ void main() {
     await controller.dispose();
   });
 
-  test('progress events advance the current sentence + notify onSentence', () async {
-    Sentence? notified;
-    final tts = FakeTts();
-    final controller =
-        TtsPlaybackController(tts, onSentence: (s) => notified = s);
-    await controller.play(sentences);
+  test(
+    'progress events advance the current sentence + notify onSentence',
+    () async {
+      Sentence? notified;
+      final tts = FakeTts();
+      final controller = TtsPlaybackController(
+        tts,
+        onSentence: (s) => notified = s,
+      );
+      await controller.play(sentences);
 
-    tts.emitSentence(2);
-    await Future<void>.delayed(Duration.zero);
+      tts.emitSentence(2);
+      await Future<void>.delayed(Duration.zero);
 
-    expect(controller.state.value.currentIndex, 2);
-    expect(controller.currentSentence?.text, 'Third.');
-    expect(notified?.index, 2);
-    await controller.dispose();
-  });
+      expect(controller.state.value.currentIndex, 2);
+      expect(controller.currentSentence?.text, 'Third.');
+      expect(notified?.index, 2);
+      await controller.dispose();
+    },
+  );
 
   test('state events flow into the UI state', () async {
     final tts = FakeTts();

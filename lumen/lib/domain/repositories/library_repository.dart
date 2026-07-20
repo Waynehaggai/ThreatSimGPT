@@ -51,5 +51,8 @@ abstract interface class LibraryRepository {
   Future<Result<Collection>> createCollection(Collection collection);
   Future<Result<void>> updateCollection(Collection collection);
   Future<Result<void>> deleteCollection(String id);
-  Future<Result<void>> setBookCollections(String bookId, List<String> collectionIds);
+  Future<Result<void>> setBookCollections(
+    String bookId,
+    List<String> collectionIds,
+  );
 }

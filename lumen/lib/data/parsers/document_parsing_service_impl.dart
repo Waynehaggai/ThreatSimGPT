@@ -27,7 +27,8 @@ class DocumentParsingServiceImpl implements DocumentParsingService {
     final parser = _byFormat[format];
     if (parser == null) {
       return Result.failure(
-          DocumentFailure('No parser registered for ${format.name}.'));
+        DocumentFailure('No parser registered for ${format.name}.'),
+      );
     }
     return parser.extractMetadata(filePath);
   }
@@ -37,7 +38,8 @@ class DocumentParsingServiceImpl implements DocumentParsingService {
     final parser = _byFormat[book.format];
     if (parser == null) {
       return Result.failure(
-          DocumentFailure('No parser registered for ${book.format.name}.'));
+        DocumentFailure('No parser registered for ${book.format.name}.'),
+      );
     }
     return parser.extractContent(book);
   }

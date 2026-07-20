@@ -63,7 +63,9 @@ TextStyle _applyAnnotation(TextStyle style, Annotation a) {
   final color = a.colorValue != null ? Color(a.colorValue!) : null;
   return switch (a.type) {
     AnnotationType.highlight => style.copyWith(
-        backgroundColor: (color ?? const Color(0xFFFFF176)).withValues(alpha: 0.45),
+        backgroundColor: (color ?? const Color(0xFFFFF176)).withValues(
+          alpha: 0.45,
+        ),
       ),
     AnnotationType.underline => style.copyWith(
         decoration: TextDecoration.underline,

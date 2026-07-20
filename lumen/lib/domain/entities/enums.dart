@@ -42,7 +42,8 @@ enum BookFormat {
       };
 
   /// Whether an authored fixed layout exists worth preserving in Original Mode.
-  bool get hasOriginalLayout => this == BookFormat.pdf ||
+  bool get hasOriginalLayout =>
+      this == BookFormat.pdf ||
       this == BookFormat.cbz ||
       this == BookFormat.cbr;
 }
@@ -66,13 +67,7 @@ enum PageNavigation {
 }
 
 /// Visual themes available in the reader (distinct from the app-chrome theme).
-enum ReadingTheme {
-  light,
-  dark,
-  sepia,
-  cream,
-  amoledBlack,
-}
+enum ReadingTheme { light, dark, sepia, cream, amoledBlack }
 
 /// Text alignment within reflowed content.
 enum ReadingTextAlign { start, justify, center }
@@ -84,7 +79,14 @@ enum AnnotationType { highlight, underline, note, stickyNote }
 enum SyncOperationStatus { pending, inFlight, failed, completed }
 
 /// The kind of local change a sync operation represents.
-enum SyncEntityType { book, annotation, progress, collection, settings, statistics }
+enum SyncEntityType {
+  book,
+  annotation,
+  progress,
+  collection,
+  settings,
+  statistics,
+}
 
 /// CRUD verb for a sync operation.
 enum SyncAction { create, update, delete }

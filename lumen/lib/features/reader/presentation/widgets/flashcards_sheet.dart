@@ -39,14 +39,19 @@ class FlashcardsSheet extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
             child: Row(
               children: [
-                Icon(Icons.style_rounded,
-                    size: 20, color: theme.colorScheme.primary),
+                Icon(
+                  Icons.style_rounded,
+                  size: 20,
+                  color: theme.colorScheme.primary,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(title,
-                      style: theme.textTheme.titleMedium,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+                  child: Text(
+                    title,
+                    style: theme.textTheme.titleMedium,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
@@ -61,15 +66,20 @@ class FlashcardsSheet extends StatelessWidget {
                 return snapshot.data!.fold(
                   onSuccess: (cards) => cards.isEmpty
                       ? Center(
-                          child: Text('No cards generated.',
-                              style: theme.textTheme.bodyLarge))
+                          child: Text(
+                            'No cards generated.',
+                            style: theme.textTheme.bodyLarge,
+                          ),
+                        )
                       : _Deck(cards: cards, scrollController: scrollController),
                   onFailure: (f) => Center(
                     child: Padding(
                       padding: const EdgeInsets.all(24),
-                      child: Text(f.message,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: theme.colorScheme.error)),
+                      child: Text(
+                        f.message,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: theme.colorScheme.error),
+                      ),
                     ),
                   ),
                 );
@@ -120,8 +130,10 @@ class _DeckState extends State<_Deck> {
         ),
         Padding(
           padding: const EdgeInsets.only(bottom: 20, top: 4),
-          child: Text('${_index + 1} / ${widget.cards.length}',
-              style: theme.textTheme.bodySmall),
+          child: Text(
+            '${_index + 1} / ${widget.cards.length}',
+            style: theme.textTheme.bodySmall,
+          ),
         ),
       ],
     );
@@ -164,9 +176,12 @@ class _FlipCardState extends State<_FlipCard> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(_showBack ? 'ANSWER' : 'QUESTION',
-                      style: theme.textTheme.labelSmall
-                          ?.copyWith(color: theme.colorScheme.outline)),
+                  Text(
+                    _showBack ? 'ANSWER' : 'QUESTION',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.outline,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   Text(
                     _showBack ? widget.card.back : widget.card.front,
@@ -174,9 +189,12 @@ class _FlipCardState extends State<_FlipCard> {
                     style: theme.textTheme.titleMedium,
                   ),
                   const SizedBox(height: 20),
-                  Text('Tap to flip',
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: theme.colorScheme.outline)),
+                  Text(
+                    'Tap to flip',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.outline,
+                    ),
+                  ),
                 ],
               ),
             ),

@@ -30,21 +30,25 @@ class StatisticsScreen extends ConsumerWidget {
               childAspectRatio: 1.6,
               children: [
                 _StatCard(
-                    label: 'Books completed',
-                    value: '${stats.booksCompleted}',
-                    icon: Icons.emoji_events_outlined),
+                  label: 'Books completed',
+                  value: '${stats.booksCompleted}',
+                  icon: Icons.emoji_events_outlined,
+                ),
                 _StatCard(
-                    label: 'Hours read',
-                    value: _hoursLabel(stats),
-                    icon: Icons.schedule_outlined),
+                  label: 'Hours read',
+                  value: _hoursLabel(stats),
+                  icon: Icons.schedule_outlined,
+                ),
                 _StatCard(
-                    label: 'Current streak',
-                    value: '${stats.currentStreakDays}d',
-                    icon: Icons.local_fire_department_outlined),
+                  label: 'Current streak',
+                  value: '${stats.currentStreakDays}d',
+                  icon: Icons.local_fire_department_outlined,
+                ),
                 _StatCard(
-                    label: 'Pages read',
-                    value: '${stats.pagesRead}',
-                    icon: Icons.menu_book_outlined),
+                  label: 'Pages read',
+                  value: '${stats.pagesRead}',
+                  icon: Icons.menu_book_outlined,
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -67,8 +71,11 @@ class StatisticsScreen extends ConsumerWidget {
 }
 
 class _StatCard extends StatelessWidget {
-  const _StatCard(
-      {required this.label, required this.value, required this.icon});
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
   final String label;
   final String value;
   final IconData icon;
@@ -84,9 +91,12 @@ class _StatCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Icon(icon, color: theme.colorScheme.primary),
-            Text(value,
-                style: theme.textTheme.headlineMedium
-                    ?.copyWith(fontWeight: FontWeight.w700)),
+            Text(
+              value,
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             Text(label, style: theme.textTheme.bodySmall),
           ],
         ),
@@ -130,8 +140,7 @@ class _DailyGoalCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(6),
             ),
             const SizedBox(height: 8),
-            Text('$done / $goal min today',
-                style: theme.textTheme.bodySmall),
+            Text('$done / $goal min today', style: theme.textTheme.bodySmall),
           ],
         ),
       ),
@@ -162,11 +171,13 @@ class _DailyGoalCard extends StatelessWidget {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
-              onPressed: () => Navigator.pop(ctx, minutes),
-              child: const Text('Save')),
+            onPressed: () => Navigator.pop(ctx, minutes),
+            child: const Text('Save'),
+          ),
         ],
       ),
     );
@@ -199,8 +210,10 @@ class _ProductiveHoursCard extends StatelessWidget {
             if (peakHour != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text('Peak around ${_hourLabel(peakHour)}',
-                    style: theme.textTheme.bodySmall),
+                child: Text(
+                  'Peak around ${_hourLabel(peakHour)}',
+                  style: theme.textTheme.bodySmall,
+                ),
               ),
             const SizedBox(height: 12),
             SizedBox(
@@ -275,9 +288,12 @@ class _MetaCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(label, style: theme.textTheme.bodyMedium),
-            Text(value,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(fontWeight: FontWeight.w600)),
+            Text(
+              value,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
       );

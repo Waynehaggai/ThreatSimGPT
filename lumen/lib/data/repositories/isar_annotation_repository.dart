@@ -33,7 +33,8 @@ class IsarAnnotationRepository implements AnnotationRepository {
   Future<Result<void>> saveAnnotation(Annotation annotation) async {
     try {
       await _isar.writeTxn(
-          () => _isar.annotationModels.put(annotation.toModel()));
+        () => _isar.annotationModels.put(annotation.toModel()),
+      );
       await _syncQueue.enqueue(
         entityType: SyncEntityType.annotation,
         entityId: annotation.id,
@@ -42,7 +43,8 @@ class IsarAnnotationRepository implements AnnotationRepository {
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(
-          StorageFailure('Failed to save annotation.', cause: e));
+        StorageFailure('Failed to save annotation.', cause: e),
+      );
     }
   }
 
@@ -66,7 +68,8 @@ class IsarAnnotationRepository implements AnnotationRepository {
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(
-          StorageFailure('Failed to delete annotation.', cause: e));
+        StorageFailure('Failed to delete annotation.', cause: e),
+      );
     }
   }
 
@@ -84,8 +87,7 @@ class IsarAnnotationRepository implements AnnotationRepository {
   @override
   Future<Result<void>> saveBookmark(Bookmark bookmark) async {
     try {
-      await _isar.writeTxn(
-          () => _isar.bookmarkModels.put(bookmark.toModel()));
+      await _isar.writeTxn(() => _isar.bookmarkModels.put(bookmark.toModel()));
       await _syncQueue.enqueue(
         entityType: SyncEntityType.annotation,
         entityId: bookmark.id,
@@ -94,7 +96,8 @@ class IsarAnnotationRepository implements AnnotationRepository {
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(
-          StorageFailure('Failed to save bookmark.', cause: e));
+        StorageFailure('Failed to save bookmark.', cause: e),
+      );
     }
   }
 
@@ -116,7 +119,8 @@ class IsarAnnotationRepository implements AnnotationRepository {
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(
-          StorageFailure('Failed to delete bookmark.', cause: e));
+        StorageFailure('Failed to delete bookmark.', cause: e),
+      );
     }
   }
 
@@ -128,10 +132,12 @@ class IsarAnnotationRepository implements AnnotationRepository {
       final rows = await _isar.annotationModels
           .filter()
           .isDeletedEqualTo(false)
-          .group((g) => g
-              .selectedTextContains(q, caseSensitive: false)
-              .or()
-              .noteTextContains(q, caseSensitive: false))
+          .group(
+            (g) => g
+                .selectedTextContains(q, caseSensitive: false)
+                .or()
+                .noteTextContains(q, caseSensitive: false),
+          )
           .findAll();
       return Result.success(rows.map((m) => m.toEntity()).toList());
     } on Object catch (e) {
@@ -140,7 +146,10 @@ class IsarAnnotationRepository implements AnnotationRepository {
   }
 
   @override
-  Future<Result<String>> exportNotes(String bookId, {String format = 'md'}) async {
+  Future<Result<String>> exportNotes(
+    String bookId, {
+    String format = 'md',
+  }) async {
     try {
       final rows = await _isar.annotationModels
           .filter()

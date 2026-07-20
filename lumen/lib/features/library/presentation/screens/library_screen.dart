@@ -30,9 +30,11 @@ class LibraryScreen extends ConsumerWidget {
           ),
           IconButton(
             tooltip: layout == LibraryLayout.grid ? 'List view' : 'Grid view',
-            icon: Icon(layout == LibraryLayout.grid
-                ? Icons.view_list_rounded
-                : Icons.grid_view_rounded),
+            icon: Icon(
+              layout == LibraryLayout.grid
+                  ? Icons.view_list_rounded
+                  : Icons.grid_view_rounded,
+            ),
             onPressed: () => ref.read(libraryLayoutProvider.notifier).state =
                 layout == LibraryLayout.grid
                     ? LibraryLayout.list
@@ -55,8 +57,7 @@ class LibraryScreen extends ConsumerWidget {
           return layout == LibraryLayout.grid
               ? GridView.builder(
                   padding: const EdgeInsets.all(16),
-                  gridDelegate:
-                      const SliverGridDelegateWithMaxCrossAxisExtent(
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                     maxCrossAxisExtent: 180,
                     childAspectRatio: 0.62,
                     crossAxisSpacing: 16,
@@ -65,8 +66,7 @@ class LibraryScreen extends ConsumerWidget {
                   itemCount: books.length,
                   itemBuilder: (_, i) => BookGridTile(
                     book: books[i],
-                    onTap: () =>
-                        context.push(Routes.readerPath(books[i].id)),
+                    onTap: () => context.push(Routes.readerPath(books[i].id)),
                   ),
                 )
               : ListView.separated(
@@ -75,8 +75,7 @@ class LibraryScreen extends ConsumerWidget {
                   separatorBuilder: (_, __) => const Divider(height: 1),
                   itemBuilder: (_, i) => BookListTile(
                     book: books[i],
-                    onTap: () =>
-                        context.push(Routes.readerPath(books[i].id)),
+                    onTap: () => context.push(Routes.readerPath(books[i].id)),
                   ),
                 );
         },
@@ -108,7 +107,9 @@ class LibraryScreen extends ConsumerWidget {
     }
     if (imported > 0) {
       messenger.showSnackBar(
-        SnackBar(content: Text('Imported $imported book${imported == 1 ? '' : 's'}')),
+        SnackBar(
+          content: Text('Imported $imported book${imported == 1 ? '' : 's'}'),
+        ),
       );
     }
   }

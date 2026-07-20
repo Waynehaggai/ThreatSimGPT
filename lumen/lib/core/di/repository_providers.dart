@@ -38,21 +38,25 @@ Never _mustOverride(String name) => throw UnimplementedError(
 
 /// Defaults to the platform-secure implementation (biometric/PIN + secure key
 /// storage); the bootstrap provides an already-`init()`-ed instance.
-final securityServiceProvider =
-    Provider<SecurityService>((ref) => SecureSecurityService());
+final securityServiceProvider = Provider<SecurityService>(
+  (ref) => SecureSecurityService(),
+);
 
 /// Defaults to an in‑memory implementation so highlights/notes/bookmarks work
 /// out of the box; the bootstrap overrides it with `IsarAnnotationRepository`.
-final annotationRepositoryProvider =
-    Provider<AnnotationRepository>((ref) => InMemoryAnnotationRepository());
+final annotationRepositoryProvider = Provider<AnnotationRepository>(
+  (ref) => InMemoryAnnotationRepository(),
+);
 
 /// Defaults to an in‑memory implementation so reader resume/position tracking
 /// works out of the box; the bootstrap overrides it with `IsarProgressRepository`.
-final progressRepositoryProvider =
-    Provider<ProgressRepository>((ref) => InMemoryProgressRepository());
+final progressRepositoryProvider = Provider<ProgressRepository>(
+  (ref) => InMemoryProgressRepository(),
+);
 
 final settingsRepositoryProvider = Provider<SettingsRepository>(
-    (ref) => _mustOverride('settingsRepositoryProvider'));
+  (ref) => _mustOverride('settingsRepositoryProvider'),
+);
 
 /// Document parsing for every supported format. Adding a format is a one-line
 /// registration here plus the parser implementation.
@@ -73,21 +77,25 @@ final importServiceProvider = Provider<ImportService>(
 /// The synchronization engine. Defaults to inert (offline / no cloud); the
 /// bootstrap overrides it with a `SyncEngine` once persistence is available and
 /// a Firebase backend is wired.
-final syncRepositoryProvider =
-    Provider<SyncRepository>((ref) => const NoopSyncRepository());
+final syncRepositoryProvider = Provider<SyncRepository>(
+  (ref) => const NoopSyncRepository(),
+);
 
 /// Reactive sync status for the UI (status chip, settings).
 final syncStateProvider = StreamProvider<SyncState>(
-    (ref) => ref.watch(syncRepositoryProvider).watchState());
+  (ref) => ref.watch(syncRepositoryProvider).watchState(),
+);
 
 /// Reading statistics. Defaults to in-memory; the bootstrap overrides it with
 /// `IsarStatisticsRepository`.
 final statisticsRepositoryProvider = Provider<StatisticsRepository>(
-    (ref) => InMemoryStatisticsRepository());
+  (ref) => InMemoryStatisticsRepository(),
+);
 
 /// Reactive aggregate stats for the dashboard.
 final readingStatsProvider = StreamProvider<ReadingStats>(
-    (ref) => ref.watch(statisticsRepositoryProvider).watchStats());
+  (ref) => ref.watch(statisticsRepositoryProvider).watchStats(),
+);
 
 /// AI module configuration. `null` (the default) keeps AI features off. Provide
 /// an [AiConfig] pointing at your backend proxy — via a bootstrap override or a

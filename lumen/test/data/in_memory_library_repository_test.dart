@@ -25,9 +25,8 @@ void main() {
     await repo.importBook('/x/Clean Architecture.pdf');
     await repo.importBook('/x/The Pragmatic Programmer.pdf');
 
-    final filtered = await repo
-        .watchBooks(const LibraryQuery(search: 'pragmatic'))
-        .first;
+    final filtered =
+        await repo.watchBooks(const LibraryQuery(search: 'pragmatic')).first;
     expect(filtered, hasLength(1));
     expect(filtered.single.title, contains('Pragmatic'));
   });
@@ -40,9 +39,8 @@ void main() {
     final visible = await repo.watchBooks(const LibraryQuery()).first;
     expect(visible, isEmpty);
 
-    final all = await repo
-        .watchBooks(const LibraryQuery(includeArchived: true))
-        .first;
+    final all =
+        await repo.watchBooks(const LibraryQuery(includeArchived: true)).first;
     expect(all, hasLength(1));
   });
 }

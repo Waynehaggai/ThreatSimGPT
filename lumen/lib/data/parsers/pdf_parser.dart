@@ -33,20 +33,21 @@ class PdfParser implements DocumentParser {
       final info = doc.documentInformation;
 
       // Sample the first few pages to decide whether the PDF is image-only.
-      final sample = PdfTextExtractor(doc).extractText(
-        startPageIndex: 0,
-        endPageIndex: (count - 1).clamp(0, 4),
-      );
+      final sample = PdfTextExtractor(
+        doc,
+      ).extractText(startPageIndex: 0, endPageIndex: (count - 1).clamp(0, 4));
       final isImageOnly = sample.trim().length < 8;
 
-      return Result.success(DocumentMetadata(
-        title: (info.title.isNotEmpty)
-            ? info.title
-            : p.basenameWithoutExtension(filePath),
-        author: info.author.isNotEmpty ? info.author : 'Unknown',
-        pageCount: count,
-        isImageOnly: isImageOnly,
-      ));
+      return Result.success(
+        DocumentMetadata(
+          title: (info.title.isNotEmpty)
+              ? info.title
+              : p.basenameWithoutExtension(filePath),
+          author: info.author.isNotEmpty ? info.author : 'Unknown',
+          pageCount: count,
+          isImageOnly: isImageOnly,
+        ),
+      );
     } on Object catch (e) {
       return Result.failure(DocumentFailure('Could not read PDF.', cause: e));
     } finally {
@@ -74,31 +75,37 @@ class PdfParser implements DocumentParser {
         for (final para in text.split(RegExp(r'\n\s*\n'))) {
           final clean = para.replaceAll(RegExp(r'\s+'), ' ').trim();
           if (clean.isEmpty) continue;
-          blocks.add(ContentBlock(
-            type: BlockType.paragraph,
-            text: clean,
-            charOffset: offset,
-          ));
+          blocks.add(
+            ContentBlock(
+              type: BlockType.paragraph,
+              text: clean,
+              charOffset: offset,
+            ),
+          );
           offset += clean.length + 1;
           wordCount += clean.split(' ').length;
         }
       }
 
       if (blocks.isEmpty) {
-        return const Result.failure(DocumentFailure(
-          'This PDF has no extractable text (likely scanned). OCR (M8) will '
-          'build Smart content.',
-        ));
+        return const Result.failure(
+          DocumentFailure(
+            'This PDF has no extractable text (likely scanned). OCR (M8) will '
+            'build Smart content.',
+          ),
+        );
       }
 
-      return Result.success(BookContent(
-        bookId: book.id,
-        chapters: [
-          Chapter(id: 'ch-0', title: book.title, order: 0, blocks: blocks),
-        ],
-        generatedAt: DateTime.now(),
-        wordCount: wordCount,
-      ));
+      return Result.success(
+        BookContent(
+          bookId: book.id,
+          chapters: [
+            Chapter(id: 'ch-0', title: book.title, order: 0, blocks: blocks),
+          ],
+          generatedAt: DateTime.now(),
+          wordCount: wordCount,
+        ),
+      );
     } on Object catch (e) {
       return Result.failure(DocumentFailure('Could not parse PDF.', cause: e));
     } finally {

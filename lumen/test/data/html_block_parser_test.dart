@@ -15,13 +15,16 @@ void main() {
     final blocks = parseHtmlToBlocks(html);
     final types = blocks.map((b) => b.type).toList();
 
-    expect(types, containsAllInOrder([
-      BlockType.heading,
-      BlockType.paragraph,
-      BlockType.quote,
-      BlockType.list,
-      BlockType.code,
-    ]));
+    expect(
+      types,
+      containsAllInOrder([
+        BlockType.heading,
+        BlockType.paragraph,
+        BlockType.quote,
+        BlockType.list,
+        BlockType.code,
+      ]),
+    );
   });
 
   test('heading level derives from the tag', () {

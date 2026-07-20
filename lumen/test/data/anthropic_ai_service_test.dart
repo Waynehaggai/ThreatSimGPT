@@ -21,9 +21,7 @@ const _chapter = Chapter(
   id: 'c0',
   title: 'Chapter One',
   order: 0,
-  blocks: [
-    ContentBlock(type: BlockType.paragraph, text: 'Once upon a time.'),
-  ],
+  blocks: [ContentBlock(type: BlockType.paragraph, text: 'Once upon a time.')],
 );
 
 AnthropicAiService _service(MockClient client) => AnthropicAiService(
@@ -34,10 +32,12 @@ AnthropicAiService _service(MockClient client) => AnthropicAiService(
 void main() {
   test('summarizeChapter posts to the proxy with the default model', () async {
     late http.Request captured;
-    final service = _service(MockClient((req) async {
-      captured = req;
-      return _text('A concise summary.');
-    }));
+    final service = _service(
+      MockClient((req) async {
+        captured = req;
+        return _text('A concise summary.');
+      }),
+    );
 
     final result = await service.summarizeChapter(_chapter);
 
@@ -51,14 +51,18 @@ void main() {
   });
 
   test('defineWord parses the structured JSON response', () async {
-    final service = _service(MockClient((req) async {
-      // Structured output: the text block contains JSON.
-      return _text(jsonEncode({
-        'word': 'lumen',
-        'phonetic': 'ˈluːmən',
-        'meanings': ['the SI unit of luminous flux'],
-      }));
-    }));
+    final service = _service(
+      MockClient((req) async {
+        // Structured output: the text block contains JSON.
+        return _text(
+          jsonEncode({
+            'word': 'lumen',
+            'phonetic': 'ˈluːmən',
+            'meanings': ['the SI unit of luminous flux'],
+          }),
+        );
+      }),
+    );
 
     final result = await service.defineWord('lumen');
     final def = result.valueOrNull!;
@@ -68,14 +72,18 @@ void main() {
   });
 
   test('generateFlashcards maps the cards array', () async {
-    final service = _service(MockClient((req) async {
-      return _text(jsonEncode({
-        'cards': [
-          {'front': 'Q1', 'back': 'A1'},
-          {'front': 'Q2', 'back': 'A2'},
-        ],
-      }));
-    }));
+    final service = _service(
+      MockClient((req) async {
+        return _text(
+          jsonEncode({
+            'cards': [
+              {'front': 'Q1', 'back': 'A1'},
+              {'front': 'Q2', 'back': 'A2'},
+            ],
+          }),
+        );
+      }),
+    );
 
     final cards = (await service.generateFlashcards(_chapter)).valueOrNull!;
     expect(cards, hasLength(2));
@@ -83,46 +91,58 @@ void main() {
     expect(cards.first.back, 'A1');
   });
 
-  test('answerAboutBook grounds the prompt in the retrieved passages', () async {
-    late http.Request captured;
-    final service = _service(MockClient((req) async {
-      captured = req;
-      return _text('Grounded answer.');
-    }));
+  test(
+    'answerAboutBook grounds the prompt in the retrieved passages',
+    () async {
+      late http.Request captured;
+      final service = _service(
+        MockClient((req) async {
+          captured = req;
+          return _text('Grounded answer.');
+        }),
+      );
 
-    final result = await service.answerAboutBook(
-      'Who is the narrator?',
-      passages: ['The narrator is Ishmael.', 'Call me Ishmael.'],
-    );
+      final result = await service.answerAboutBook(
+        'Who is the narrator?',
+        passages: ['The narrator is Ishmael.', 'Call me Ishmael.'],
+      );
 
-    expect(result.valueOrNull, 'Grounded answer.');
-    final body = jsonDecode(captured.body) as Map<String, dynamic>;
-    final user = (body['messages'] as List).first['content'] as String;
-    // Both passages are embedded, numbered, in the user turn.
-    expect(user, contains('[1] The narrator is Ishmael.'));
-    expect(user, contains('[2] Call me Ishmael.'));
-    expect(user, contains('Who is the narrator?'));
-  });
+      expect(result.valueOrNull, 'Grounded answer.');
+      final body = jsonDecode(captured.body) as Map<String, dynamic>;
+      final user = (body['messages'] as List).first['content'] as String;
+      // Both passages are embedded, numbered, in the user turn.
+      expect(user, contains('[1] The narrator is Ishmael.'));
+      expect(user, contains('[2] Call me Ishmael.'));
+      expect(user, contains('Who is the narrator?'));
+    },
+  );
 
   test('answerAboutBook with no passages still answers', () async {
     final service = _service(MockClient((req) async => _text('Fallback.')));
-    final result =
-        await service.answerAboutBook('A question?', passages: const []);
+    final result = await service.answerAboutBook(
+      'A question?',
+      passages: const [],
+    );
     expect(result.valueOrNull, 'Fallback.');
   });
 
   test('a refusal stop_reason becomes a failure', () async {
-    final service = _service(MockClient((req) async => http.Response(
+    final service = _service(
+      MockClient(
+        (req) async => http.Response(
           jsonEncode({'content': [], 'stop_reason': 'refusal'}),
           200,
-        )));
+        ),
+      ),
+    );
     final result = await service.explainPassage('some text');
     expect(result.isFailure, isTrue);
   });
 
   test('a non-200 response becomes a failure', () async {
     final service = _service(
-        MockClient((req) async => http.Response('server error', 500)));
+      MockClient((req) async => http.Response('server error', 500)),
+    );
     final result = await service.translate('hola', targetLang: 'English');
     expect(result.isFailure, isTrue);
   });

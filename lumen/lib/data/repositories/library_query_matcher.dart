@@ -27,11 +27,13 @@ List<Book> applyLibraryQuery(List<Book> books, LibraryQuery q) {
   int cmp(Book a, Book b) => switch (q.sortBy) {
         LibrarySort.title =>
           a.title.toLowerCase().compareTo(b.title.toLowerCase()),
-        LibrarySort.author =>
-          a.author.toLowerCase().compareTo(b.author.toLowerCase()),
+        LibrarySort.author => a.author.toLowerCase().compareTo(
+              b.author.toLowerCase(),
+            ),
         LibrarySort.dateImported => a.dateImported.compareTo(b.dateImported),
-        LibrarySort.lastOpened => (a.lastOpened ?? a.dateImported)
-            .compareTo(b.lastOpened ?? b.dateImported),
+        LibrarySort.lastOpened => (a.lastOpened ?? a.dateImported).compareTo(
+            b.lastOpened ?? b.dateImported,
+          ),
         LibrarySort.progress => a.progressPercent.compareTo(b.progressPercent),
         LibrarySort.fileSize => a.fileSizeBytes.compareTo(b.fileSizeBytes),
       };

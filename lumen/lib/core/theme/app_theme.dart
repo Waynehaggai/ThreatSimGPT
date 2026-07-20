@@ -32,9 +32,7 @@ abstract final class AppTheme {
       cardTheme: CardThemeData(
         elevation: 0,
         color: scheme.surfaceContainerLow,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         clipBehavior: Clip.antiAlias,
       ),
       filledButtonTheme: FilledButtonThemeData(

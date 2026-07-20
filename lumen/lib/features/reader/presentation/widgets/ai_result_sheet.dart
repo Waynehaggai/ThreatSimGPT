@@ -37,8 +37,11 @@ class AiResultSheet extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.auto_awesome_rounded,
-                  size: 20, color: theme.colorScheme.primary),
+              Icon(
+                Icons.auto_awesome_rounded,
+                size: 20,
+                color: theme.colorScheme.primary,
+              ),
               const SizedBox(width: 8),
               Text(title, style: theme.textTheme.titleMedium),
             ],

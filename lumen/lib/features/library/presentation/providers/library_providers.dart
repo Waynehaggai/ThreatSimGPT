@@ -19,12 +19,14 @@ final libraryRepositoryProvider = Provider<LibraryRepository>((ref) {
 /// How the library is currently viewed (grid vs list) — a UI-only concern.
 enum LibraryLayout { grid, list }
 
-final libraryLayoutProvider =
-    StateProvider<LibraryLayout>((_) => LibraryLayout.grid);
+final libraryLayoutProvider = StateProvider<LibraryLayout>(
+  (_) => LibraryLayout.grid,
+);
 
 /// Current search / filter / sort selection.
-final libraryQueryProvider =
-    StateProvider<LibraryQuery>((_) => const LibraryQuery());
+final libraryQueryProvider = StateProvider<LibraryQuery>(
+  (_) => const LibraryQuery(),
+);
 
 /// Reactive stream of books for the current query.
 final libraryBooksProvider = StreamProvider<List<Book>>((ref) {
@@ -34,12 +36,15 @@ final libraryBooksProvider = StreamProvider<List<Book>>((ref) {
 });
 
 /// Use-case-backed actions for the library UI.
-final importBookProvider =
-    Provider((ref) => ImportBook(ref.watch(libraryRepositoryProvider)));
-final toggleFavoriteProvider =
-    Provider((ref) => ToggleFavorite(ref.watch(libraryRepositoryProvider)));
-final deleteBookProvider =
-    Provider((ref) => DeleteBook(ref.watch(libraryRepositoryProvider)));
+final importBookProvider = Provider(
+  (ref) => ImportBook(ref.watch(libraryRepositoryProvider)),
+);
+final toggleFavoriteProvider = Provider(
+  (ref) => ToggleFavorite(ref.watch(libraryRepositoryProvider)),
+);
+final deleteBookProvider = Provider(
+  (ref) => DeleteBook(ref.watch(libraryRepositoryProvider)),
+);
 
 /// Seed data for the in-memory repository. Empty by default so a fresh install
 /// shows the real empty state; populated by importing books.

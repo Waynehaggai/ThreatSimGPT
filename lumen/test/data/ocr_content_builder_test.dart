@@ -27,8 +27,10 @@ void main() {
     final content = buildOcrContent('b', [
       page(0, 'a line that the scanner\nwrapped in the middle'),
     ]);
-    expect(content.blocks.single.text,
-        'a line that the scanner wrapped in the middle');
+    expect(
+      content.blocks.single.text,
+      'a line that the scanner wrapped in the middle',
+    );
   });
 
   test('char offsets are monotonically increasing', () {
@@ -43,7 +45,10 @@ void main() {
   });
 
   test('sorts pages by index before building', () {
-    final content = buildOcrContent('b', [page(1, 'Second.'), page(0, 'First.')]);
+    final content = buildOcrContent('b', [
+      page(1, 'Second.'),
+      page(0, 'First.'),
+    ]);
     final paras = content.blocks
         .where((b) => b.type == BlockType.paragraph)
         .map((b) => b.text)

@@ -37,15 +37,15 @@ class IsarProgressRepository implements ProgressRepository {
       return Result.success(model?.toEntity());
     } on Object catch (e) {
       return Result.failure(
-          StorageFailure('Failed to load progress.', cause: e));
+        StorageFailure('Failed to load progress.', cause: e),
+      );
     }
   }
 
   @override
   Future<Result<void>> saveProgress(ReadingProgress progress) async {
     try {
-      await _isar.writeTxn(
-          () => _isar.progressModels.put(progress.toModel()));
+      await _isar.writeTxn(() => _isar.progressModels.put(progress.toModel()));
       await _syncQueue.enqueue(
         entityType: SyncEntityType.progress,
         entityId: progress.bookId,
@@ -60,7 +60,8 @@ class IsarProgressRepository implements ProgressRepository {
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(
-          StorageFailure('Failed to save progress.', cause: e));
+        StorageFailure('Failed to save progress.', cause: e),
+      );
     }
   }
 

@@ -47,11 +47,9 @@ class _AskBookScreenState extends ConsumerState<AskBookScreen> {
   @override
   Widget build(BuildContext context) {
     final turns = ref.watch(askBookControllerProvider(widget.bookId));
-    final bookTitle = ref
-            .watch(readerBookProvider(widget.bookId))
-            .valueOrNull
-            ?.title ??
-        'this book';
+    final bookTitle =
+        ref.watch(readerBookProvider(widget.bookId)).valueOrNull?.title ??
+            'this book';
 
     return Scaffold(
       appBar: AppBar(
@@ -166,7 +164,10 @@ class _TurnTile extends StatelessWidget {
       );
     }
     if (turn.error != null) {
-      return Text(turn.error!, style: TextStyle(color: theme.colorScheme.error));
+      return Text(
+        turn.error!,
+        style: TextStyle(color: theme.colorScheme.error),
+      );
     }
     return SelectableText(
       (turn.answer ?? '').isEmpty ? 'No response.' : turn.answer!,
@@ -188,8 +189,11 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.auto_awesome_rounded,
-                size: 48, color: theme.colorScheme.primary),
+            Icon(
+              Icons.auto_awesome_rounded,
+              size: 48,
+              color: theme.colorScheme.primary,
+            ),
             const SizedBox(height: 16),
             Text(
               'Ask anything about “$bookTitle”.',
@@ -200,8 +204,9 @@ class _EmptyState extends StatelessWidget {
             Text(
               'Answers are drawn from the book\'s own text.',
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: theme.colorScheme.outline),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.outline,
+              ),
             ),
           ],
         ),

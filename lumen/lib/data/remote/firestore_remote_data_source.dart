@@ -35,7 +35,10 @@ class FirestoreRemoteDataSource implements RemoteDataSource {
   }
 
   CollectionReference<Map<String, dynamic>> _collection(SyncEntityType type) =>
-      _db.collection(AppConstants.usersCollection).doc(_uid).collection(_name(type));
+      _db
+          .collection(AppConstants.usersCollection)
+          .doc(_uid)
+          .collection(_name(type));
 
   String _name(SyncEntityType type) => switch (type) {
         SyncEntityType.book => AppConstants.booksCollection,
@@ -52,20 +55,20 @@ class FirestoreRemoteDataSource implements RemoteDataSource {
     String id,
     Map<String, dynamic> data,
   ) async {
-    await _collection(type).doc(id).set(
-      {...data, 'updatedAt': FieldValue.serverTimestamp()},
-      SetOptions(merge: true),
-    );
+    await _collection(type).doc(id).set({
+      ...data,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
   }
 
   @override
   Future<void> remove(SyncEntityType type, String id) async {
     // Tombstone rather than hard-delete, so the deletion syncs to other devices
     // and user data is never silently lost.
-    await _collection(type).doc(id).set(
-      {'isDeleted': true, 'updatedAt': FieldValue.serverTimestamp()},
-      SetOptions(merge: true),
-    );
+    await _collection(type).doc(id).set({
+      'isDeleted': true,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
   }
 
   @override
@@ -87,20 +90,24 @@ class FirestoreRemoteDataSource implements RemoteDataSource {
     for (final type in SyncEntityType.values) {
       Query<Map<String, dynamic>> query = _collection(type);
       if (since != null) {
-        query = query.where('updatedAt',
-            isGreaterThan: Timestamp.fromDate(since));
+        query = query.where(
+          'updatedAt',
+          isGreaterThan: Timestamp.fromDate(since),
+        );
       }
       final snap = await query.get();
       for (final doc in snap.docs) {
         final data = doc.data();
         final ts = data['updatedAt'];
-        changes.add(RemoteChange(
-          type: type,
-          id: doc.id,
-          data: data,
-          updatedAt: ts is Timestamp ? ts.toDate() : DateTime.now(),
-          deleted: data['isDeleted'] == true,
-        ));
+        changes.add(
+          RemoteChange(
+            type: type,
+            id: doc.id,
+            data: data,
+            updatedAt: ts is Timestamp ? ts.toDate() : DateTime.now(),
+            deleted: data['isDeleted'] == true,
+          ),
+        );
       }
     }
     return changes;

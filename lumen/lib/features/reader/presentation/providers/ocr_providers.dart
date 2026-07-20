@@ -14,8 +14,10 @@ final ocrServiceProvider = Provider<OcrService>((ref) {
 });
 
 /// Per-book OCR run controller (progress + streamed results).
-final ocrRunControllerProvider =
-    Provider.family<OcrRunController, String>((ref, bookId) {
+final ocrRunControllerProvider = Provider.family<OcrRunController, String>((
+  ref,
+  bookId,
+) {
   final controller = OcrRunController(ref.watch(ocrServiceProvider));
   ref.onDispose(controller.dispose);
   return controller;
@@ -26,5 +28,6 @@ final ocrRunControllerProvider =
 ///
 /// (Persisting OCR content to Isar across sessions is a tracked follow-up; for
 /// now a re-open re-uses it within the session and re-runs OCR after a restart.)
-final ocrContentProvider =
-    StateProvider.family<BookContent?, String>((ref, bookId) => null);
+final ocrContentProvider = StateProvider.family<BookContent?, String>(
+  (ref, bookId) => null,
+);

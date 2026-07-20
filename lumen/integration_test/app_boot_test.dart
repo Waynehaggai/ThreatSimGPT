@@ -14,8 +14,9 @@ import 'package:lumen/core/utils/logger.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('boots to sign-in and enters the library as a guest',
-      (tester) async {
+  testWidgets('boots to sign-in and enters the library as a guest', (
+    tester,
+  ) async {
     AppLogger.init();
     final overrides = await buildProductionOverrides();
 

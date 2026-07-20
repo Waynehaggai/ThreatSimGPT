@@ -24,40 +24,42 @@ class BookGridTile extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: _cover(theme),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            book.title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodyMedium
-                ?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          Text(
-            book.author,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodySmall
-                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-          ),
-          if (book.progressPercent > 0) ...[
-            const SizedBox(height: 6),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: book.progressPercent,
-                minHeight: 3,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: _cover(theme),
               ),
             ),
+            const SizedBox(height: 8),
+            Text(
+              book.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Text(
+              book.author,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            if (book.progressPercent > 0) ...[
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: book.progressPercent,
+                  minHeight: 3,
+                ),
+              ),
+            ],
           ],
-        ],
         ),
       ),
     );
@@ -75,8 +77,11 @@ class BookGridTile extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.menu_book_rounded,
-              size: 32, color: theme.colorScheme.primary),
+          Icon(
+            Icons.menu_book_rounded,
+            size: 32,
+            color: theme.colorScheme.primary,
+          ),
           const SizedBox(height: 8),
           Text(
             book.title,

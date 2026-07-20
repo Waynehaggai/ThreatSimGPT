@@ -3,7 +3,8 @@ import 'package:lumen/domain/entities/book.dart';
 import 'package:lumen/domain/entities/enums.dart';
 
 void main() {
-  Book book({double progress = 0.0, BookFormat format = BookFormat.pdf}) => Book(
+  Book book({double progress = 0.0, BookFormat format = BookFormat.pdf}) =>
+      Book(
         id: 'b1',
         title: 'Test',
         author: 'Author',

@@ -23,7 +23,8 @@ class ReflowPaginator {
   }) {
     final heights = [
       for (final block in blocks)
-        _measure(block, pageSize.width, textDirection) + typography.blockSpacing,
+        _measure(block, pageSize.width, textDirection) +
+            typography.blockSpacing,
     ];
     return packer.pack(heights, pageSize.height);
   }
@@ -36,7 +37,12 @@ class ReflowPaginator {
       case BlockType.pageBreak:
         return 32;
       case BlockType.heading:
-        return _text(block.text ?? '', typography.heading(block.level), width, dir);
+        return _text(
+          block.text ?? '',
+          typography.heading(block.level),
+          width,
+          dir,
+        );
       case BlockType.quote:
         return _text(block.text ?? '', typography.quote, width - 16, dir);
       case BlockType.caption:

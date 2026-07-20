@@ -60,9 +60,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
   }
 
   Future<void> _maybePromptResume() async {
-    final decision =
-        await ref.read(resumeDecisionProvider(widget.bookId).future);
-    if (!mounted || !decision.promptUser || decision.remoteNewer == null) return;
+    final decision = await ref.read(
+      resumeDecisionProvider(widget.bookId).future,
+    );
+    if (!mounted || !decision.promptUser || decision.remoteNewer == null)
+      return;
     final accept = await ResumePrompt.show(
       context,
       remote: decision.remoteNewer!,
@@ -153,9 +155,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     // Single word → definition; longer selection → explanation.
     final isWord = !sel.text.trim().contains(RegExp(r'\s'));
     final future = isWord
-        ? ai.defineWord(sel.text.trim()).then((r) => r.map((d) =>
-            '${d.word}${d.phonetic != null ? '  /${d.phonetic}/' : ''}\n\n'
-            '${d.meanings.map((m) => '• $m').join('\n')}'))
+        ? ai.defineWord(sel.text.trim()).then(
+              (r) => r.map(
+                (d) =>
+                    '${d.word}${d.phonetic != null ? '  /${d.phonetic}/' : ''}\n\n'
+                    '${d.meanings.map((m) => '• $m').join('\n')}',
+              ),
+            )
         : ai.explainPassage(sel.text);
     AiResultSheet.show(
       context,
@@ -209,8 +215,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     final palette = ReadingPalette.of(settings.theme);
     final annotations =
         ref.watch(annotationsProvider(widget.bookId)).valueOrNull ?? const [];
-    final hasOcrContent =
-        ref.watch(ocrContentProvider(widget.bookId)) != null;
+    final hasOcrContent = ref.watch(ocrContentProvider(widget.bookId)) != null;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: palette.isDark
@@ -235,7 +240,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                       child: GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: () => ref
-                            .read(readerControllerProvider(widget.bookId).notifier)
+                            .read(
+                              readerControllerProvider(widget.bookId).notifier,
+                            )
                             .toggleImmersive(),
                         child: _ReaderSurface(
                           bookId: widget.bookId,
@@ -245,7 +252,9 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                           jumpPercent: _jumpPercent,
                           annotations: allAnnotations,
                           onSelect: (start, end, text) => setState(
-                              () => _pending = (start: start, end: end, text: text)),
+                            () =>
+                                _pending = (start: start, end: end, text: text),
+                          ),
                         ),
                       ),
                     ),
@@ -253,7 +262,11 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                       Align(
                         alignment: Alignment.topCenter,
                         child: Padding(
-                          padding: const EdgeInsets.only(top: 88, left: 16, right: 16),
+                          padding: const EdgeInsets.only(
+                            top: 88,
+                            left: 16,
+                            right: 16,
+                          ),
                           child: _OcrBanner(
                             onRun: () =>
                                 context.push(Routes.ocrPath(widget.bookId)),
@@ -267,7 +280,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                         bookId: widget.bookId,
                         book: book,
                         palette: palette,
-                        onJump: (percent) => setState(() => _jumpPercent = percent),
+                        onJump: (percent) =>
+                            setState(() => _jumpPercent = percent),
                         onToggleTts: _toggleTts,
                       ),
                     ),
@@ -283,7 +297,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                                 onHighlight: (color) =>
                                     _applyHighlight(color: color),
                                 onUnderline: () => _applyHighlight(
-                                    type: AnnotationType.underline),
+                                  type: AnnotationType.underline,
+                                ),
                                 onNote: _addNote,
                                 onCopy: _copySelection,
                                 onDismiss: _clearSelection,
@@ -308,9 +323,8 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                             ),
                           AnimatedSlide(
                             duration: const Duration(milliseconds: 220),
-                            offset: ui.immersive
-                                ? const Offset(0, 1)
-                                : Offset.zero,
+                            offset:
+                                ui.immersive ? const Offset(0, 1) : Offset.zero,
                             child: _BottomBar(
                               bookId: widget.bookId,
                               book: book,
@@ -365,10 +379,8 @@ class _ReaderSurface extends ConsumerWidget {
         key: ValueKey('orig-$jumpPercent'),
         filePath: book.filePath,
         initialPercent: initialPercent,
-        onProgress: (percent, page, count) => controller.onPositionChanged(
-          percent: percent,
-          charOffset: 0,
-        ),
+        onProgress: (percent, page, count) =>
+            controller.onPositionChanged(percent: percent, charOffset: 0),
       );
     }
 
@@ -379,16 +391,20 @@ class _ReaderSurface extends ConsumerWidget {
       data: (content) {
         // Feed session tracking the totals for pages/words-read estimates.
         controller.setBookMetrics(
-            pageCount: book.pageCount, wordCount: content.wordCount);
+          pageCount: book.pageCount,
+          wordCount: content.wordCount,
+        );
         return SmartReaderView(
-        // Changing the key on a TOC jump re-lays out at the new fraction.
-        key: ValueKey('smart-$jumpPercent-${settings.fontSizeSp}'
-            '-${settings.pageNavigation}'),
-        content: content,
-        typography: ReaderTypography(settings, palette),
-        navigation: settings.pageNavigation,
-        initialPercent: initialPercent,
-        annotations: annotations,
+          // Changing the key on a TOC jump re-lays out at the new fraction.
+          key: ValueKey(
+            'smart-$jumpPercent-${settings.fontSizeSp}'
+            '-${settings.pageNavigation}',
+          ),
+          content: content,
+          typography: ReaderTypography(settings, palette),
+          navigation: settings.pageNavigation,
+          initialPercent: initialPercent,
+          annotations: annotations,
           onSelect: onSelect,
           onPosition: ({required percent, required charOffset, chapterId}) =>
               controller.onPositionChanged(
@@ -439,7 +455,9 @@ class _TopBar extends ConsumerWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    color: palette.text, fontWeight: FontWeight.w600),
+                  color: palette.text,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             IconButton(
@@ -476,19 +494,25 @@ class _TopBar extends ConsumerWidget {
                 if (value == 'ask') context.push(Routes.askPath(bookId));
               },
               itemBuilder: (_) => [
-                const PopupMenuItem(value: 'export', child: Text('Export notes')),
+                const PopupMenuItem(
+                  value: 'export',
+                  child: Text('Export notes'),
+                ),
                 if (aiEnabled)
                   const PopupMenuItem(
-                      value: 'summarize',
-                      child: Text('Summarize chapter (AI)')),
+                    value: 'summarize',
+                    child: Text('Summarize chapter (AI)'),
+                  ),
                 if (aiEnabled)
                   const PopupMenuItem(
-                      value: 'flashcards',
-                      child: Text('Flashcards (AI)')),
+                    value: 'flashcards',
+                    child: Text('Flashcards (AI)'),
+                  ),
                 if (aiEnabled)
                   const PopupMenuItem(
-                      value: 'ask',
-                      child: Text('Ask about this book (AI)')),
+                    value: 'ask',
+                    child: Text('Ask about this book (AI)'),
+                  ),
               ],
             ),
           ],
@@ -647,11 +671,12 @@ class _BottomBar extends ConsumerWidget {
     final content = ref.watch(readerContentProvider(bookId)).valueOrNull;
     final settings = ref.watch(settingsProvider);
 
-    final wordsRemaining = content == null
-        ? 0
-        : (content.wordCount * (1 - ui.percent)).round();
-    final remaining = const EstimateRemainingTime()
-        .call(wordsRemaining: wordsRemaining, wordsPerMinute: 238);
+    final wordsRemaining =
+        content == null ? 0 : (content.wordCount * (1 - ui.percent)).round();
+    final remaining = const EstimateRemainingTime().call(
+      wordsRemaining: wordsRemaining,
+      wordsPerMinute: 238,
+    );
 
     return Material(
       color: palette.background.withValues(alpha: 0.96),
@@ -669,11 +694,15 @@ class _BottomBar extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('${(ui.percent * 100).round()}%',
-                      style: TextStyle(color: palette.secondaryText)),
+                  Text(
+                    '${(ui.percent * 100).round()}%',
+                    style: TextStyle(color: palette.secondaryText),
+                  ),
                   if (ui.mode == ReadingMode.smart && remaining.inMinutes > 0)
-                    Text('${remaining.inMinutes} min left',
-                        style: TextStyle(color: palette.secondaryText)),
+                    Text(
+                      '${remaining.inMinutes} min left',
+                      style: TextStyle(color: palette.secondaryText),
+                    ),
                   Row(
                     children: [
                       if (book.supportsBothModes)
@@ -689,9 +718,11 @@ class _BottomBar extends ConsumerWidget {
                           ),
                           onPressed: () => ref
                               .read(readerControllerProvider(bookId).notifier)
-                              .setMode(ui.mode == ReadingMode.smart
-                                  ? ReadingMode.original
-                                  : ReadingMode.smart),
+                              .setMode(
+                                ui.mode == ReadingMode.smart
+                                    ? ReadingMode.original
+                                    : ReadingMode.smart,
+                              ),
                         ),
                       IconButton(
                         tooltip: 'Contents',
@@ -785,8 +816,10 @@ class _LanguagePicker extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-            child: Text('Translate to',
-                style: Theme.of(context).textTheme.titleMedium),
+            child: Text(
+              'Translate to',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
           ),
           for (final lang in _languages)
             ListTile(
@@ -813,8 +846,10 @@ class _ReaderError extends StatelessWidget {
           children: [
             const Icon(Icons.error_outline_rounded, size: 48),
             const SizedBox(height: 12),
-            Text('Could not open this book.\n$message',
-                textAlign: TextAlign.center),
+            Text(
+              'Could not open this book.\n$message',
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),

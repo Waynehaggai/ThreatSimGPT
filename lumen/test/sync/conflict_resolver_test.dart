@@ -17,7 +17,12 @@ void main() {
         percent: pct,
       );
 
-  Annotation ann(String id, DateTime at, {bool deleted = false, String? note}) =>
+  Annotation ann(
+    String id,
+    DateTime at, {
+    bool deleted = false,
+    String? note,
+  }) =>
       Annotation(
         id: id,
         bookId: 'b1',
@@ -50,10 +55,7 @@ void main() {
 
   group('mergeAnnotations', () {
     test('unions disjoint annotations from both devices', () {
-      final merged = resolver.mergeAnnotations(
-        [ann('1', t0)],
-        [ann('2', t0)],
-      );
+      final merged = resolver.mergeAnnotations([ann('1', t0)], [ann('2', t0)]);
       expect(merged.map((a) => a.id).toSet(), {'1', '2'});
     });
 

@@ -21,12 +21,9 @@ List<ContentBlock> parseHtmlToBlocks(String html, {int startOffset = 0}) {
   void add(BlockType type, String text, {int level = 0}) {
     final trimmed = _collapse(text);
     if (trimmed.isEmpty && type != BlockType.image) return;
-    blocks.add(ContentBlock(
-      type: type,
-      text: trimmed,
-      level: level,
-      charOffset: offset,
-    ));
+    blocks.add(
+      ContentBlock(type: type, text: trimmed, level: level, charOffset: offset),
+    );
     offset += trimmed.length + 1;
   }
 
@@ -49,8 +46,7 @@ List<ContentBlock> parseHtmlToBlocks(String html, {int startOffset = 0}) {
       case 'figcaption':
         add(BlockType.caption, el.text);
       case 'ul' || 'ol':
-        final items = el.querySelectorAll('li')
-          ..forEach(seenListItems.add);
+        final items = el.querySelectorAll('li')..forEach(seenListItems.add);
         final text = items.map((li) => _collapse(li.text)).join('\n');
         add(BlockType.list, text);
       case 'li':
@@ -62,5 +58,4 @@ List<ContentBlock> parseHtmlToBlocks(String html, {int startOffset = 0}) {
 }
 
 /// Collapses runs of whitespace/newlines introduced by HTML formatting.
-String _collapse(String text) =>
-    text.replaceAll(RegExp(r'\s+'), ' ').trim();
+String _collapse(String text) => text.replaceAll(RegExp(r'\s+'), ' ').trim();

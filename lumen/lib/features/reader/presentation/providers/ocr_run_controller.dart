@@ -55,7 +55,10 @@ class OcrRunController {
 
   Future<void> run(String filePath, {int? totalPages}) async {
     await _sub?.cancel();
-    state.value = OcrRunState(status: OcrStatus.running, totalPages: totalPages);
+    state.value = OcrRunState(
+      status: OcrStatus.running,
+      totalPages: totalPages,
+    );
     final results = <OcrPageResult>[];
     final completer = Completer<void>();
 
@@ -68,7 +71,10 @@ class OcrRunController {
         );
       },
       onError: (Object e) {
-        state.value = state.value.copyWith(status: OcrStatus.error, error: '$e');
+        state.value = state.value.copyWith(
+          status: OcrStatus.error,
+          error: '$e',
+        );
         if (!completer.isCompleted) completer.complete();
       },
       onDone: () {

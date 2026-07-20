@@ -26,9 +26,11 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.person_outline_rounded),
             title: Text(user?.displayName ?? 'Guest'),
-            subtitle: Text(user?.isGuest ?? true
-                ? 'Guest — sign in to sync across devices'
-                : (user?.email ?? '')),
+            subtitle: Text(
+              user?.isGuest ?? true
+                  ? 'Guest — sign in to sync across devices'
+                  : (user?.email ?? ''),
+            ),
             trailing: (user?.isGuest ?? true)
                 ? const Icon(Icons.chevron_right_rounded)
                 : null,
@@ -37,15 +39,18 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.chrome_reader_mode_outlined),
             title: const Text('Default reading mode'),
-            subtitle: Text(settings.defaultReadingMode == ReadingMode.smart
-                ? 'Smart Reading (reflowable)'
-                : 'Original (as authored)'),
+            subtitle: Text(
+              settings.defaultReadingMode == ReadingMode.smart
+                  ? 'Smart Reading (reflowable)'
+                  : 'Original (as authored)',
+            ),
             trailing: SegmentedButton<ReadingMode>(
               segments: const [
+                ButtonSegment(value: ReadingMode.smart, label: Text('Smart')),
                 ButtonSegment(
-                    value: ReadingMode.smart, label: Text('Smart')),
-                ButtonSegment(
-                    value: ReadingMode.original, label: Text('Original')),
+                  value: ReadingMode.original,
+                  label: Text('Original'),
+                ),
               ],
               selected: {settings.defaultReadingMode},
               onSelectionChanged: (s) => ref
@@ -75,18 +80,15 @@ class SettingsScreen extends ConsumerWidget {
               final sync = ref.watch(syncStateProvider).valueOrNull;
               final status = sync?.status ?? SyncStatus.offline;
               final (icon, label) = switch (status) {
-                SyncStatus.idle => (
-                    Icons.cloud_done_outlined,
-                    'Up to date'
-                  ),
+                SyncStatus.idle => (Icons.cloud_done_outlined, 'Up to date'),
                 SyncStatus.syncing => (Icons.sync_rounded, 'Syncing…'),
                 SyncStatus.offline => (
                     Icons.cloud_off_outlined,
-                    'Offline — changes are queued'
+                    'Offline — changes are queued',
                   ),
                 SyncStatus.error => (
                     Icons.error_outline_rounded,
-                    'Sync error — will retry'
+                    'Sync error — will retry',
                   ),
               };
               return ListTile(
@@ -105,7 +107,8 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.lock_outline_rounded),
             title: const Text('App lock'),
-            subtitle: Text(switch (ref.watch(appLockControllerProvider).state.value.method) {
+            subtitle: Text(switch (
+                ref.watch(appLockControllerProvider).state.value.method) {
               AppLockMethod.biometric => 'Fingerprint / Face ID',
               AppLockMethod.pin => 'PIN',
               AppLockMethod.none => 'Off',
@@ -121,7 +124,8 @@ class SettingsScreen extends ConsumerWidget {
             value: settings.fontFamily == 'OpenDyslexic',
             onChanged: (on) => ref.read(settingsProvider.notifier).update(
                   (x) => x.copyWith(
-                      fontFamily: on ? 'OpenDyslexic' : 'Merriweather'),
+                    fontFamily: on ? 'OpenDyslexic' : 'Merriweather',
+                  ),
                 ),
           ),
           ListTile(
@@ -195,7 +199,9 @@ class SettingsScreen extends ConsumerWidget {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, pinController.text),
             child: const Text('Save'),

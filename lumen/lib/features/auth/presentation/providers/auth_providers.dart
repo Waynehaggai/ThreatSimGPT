@@ -25,8 +25,9 @@ final currentUserProvider = Provider<UserAccount?>((ref) {
 });
 
 /// Imperative auth actions for the sign-in UI.
-final authControllerProvider =
-    Provider<AuthController>((ref) => AuthController(ref));
+final authControllerProvider = Provider<AuthController>(
+  (ref) => AuthController(ref),
+);
 
 class AuthController {
   AuthController(this._ref);

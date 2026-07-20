@@ -15,18 +15,21 @@ class LibraryEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.auto_stories_rounded,
-                size: 64, color: theme.colorScheme.primary),
+            Icon(
+              Icons.auto_stories_rounded,
+              size: 64,
+              color: theme.colorScheme.primary,
+            ),
             const SizedBox(height: 20),
-            Text('Your library is empty',
-                style: theme.textTheme.titleLarge),
+            Text('Your library is empty', style: theme.textTheme.titleLarge),
             const SizedBox(height: 8),
             Text(
               'Import a PDF, EPUB, TXT or DOCX to start reading. Everything '
               'stays on your device and syncs when you sign in.',
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 24),
             FilledButton.icon(

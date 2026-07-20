@@ -38,30 +38,37 @@ void main() {
   test('excludes archived unless includeArchived', () {
     expect(applyLibraryQuery(library, const LibraryQuery()).length, 3);
     expect(
-      applyLibraryQuery(library, const LibraryQuery(includeArchived: true))
-          .length,
+      applyLibraryQuery(
+        library,
+        const LibraryQuery(includeArchived: true),
+      ).length,
       4,
     );
   });
 
   test('favoritesOnly filters to favorites', () {
-    final result =
-        applyLibraryQuery(library, const LibraryQuery(favoritesOnly: true));
+    final result = applyLibraryQuery(
+      library,
+      const LibraryQuery(favoritesOnly: true),
+    );
     expect(result.single.title, 'Foundation');
   });
 
   test('search matches title and author, case-insensitive', () {
     expect(
-      applyLibraryQuery(library, const LibraryQuery(search: 'asimov'))
-          .single
-          .title,
+      applyLibraryQuery(
+        library,
+        const LibraryQuery(search: 'asimov'),
+      ).single.title,
       'Foundation',
     );
   });
 
   test('collectionId filters by membership', () {
-    final result =
-        applyLibraryQuery(library, const LibraryQuery(collectionId: 'c1'));
+    final result = applyLibraryQuery(
+      library,
+      const LibraryQuery(collectionId: 'c1'),
+    );
     expect(result.single.title, 'Sci-Fi Essays');
   });
 

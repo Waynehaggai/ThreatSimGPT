@@ -53,7 +53,11 @@ class RecordingRemote implements RemoteDataSource {
   final List<String> removed = [];
 
   @override
-  Future<void> push(SyncEntityType type, String id, Map<String, dynamic> data) async {
+  Future<void> push(
+    SyncEntityType type,
+    String id,
+    Map<String, dynamic> data,
+  ) async {
     if (failFor.contains(id)) throw Exception('boom');
     pushed.add(id);
   }
@@ -62,7 +66,8 @@ class RecordingRemote implements RemoteDataSource {
   Future<void> remove(SyncEntityType type, String id) async => removed.add(id);
 
   @override
-  Future<String> uploadBookFile(String bookId, String localPath) async => localPath;
+  Future<String> uploadBookFile(String bookId, String localPath) async =>
+      localPath;
 
   @override
   Future<List<RemoteChange>> pullSince(DateTime? since) async => const [];
@@ -115,23 +120,26 @@ void main() {
     await engine.dispose();
   });
 
-  test('does nothing and reports offline when there is no connection', () async {
-    final store = FakeQueueStore([op('a')]);
-    final remote = RecordingRemote();
-    final engine = SyncEngine(
-      queue: store,
-      remote: remote,
-      isOnline: () async => false,
-    );
+  test(
+    'does nothing and reports offline when there is no connection',
+    () async {
+      final store = FakeQueueStore([op('a')]);
+      final remote = RecordingRemote();
+      final engine = SyncEngine(
+        queue: store,
+        remote: remote,
+        isOnline: () async => false,
+      );
 
-    await engine.syncNow();
+      await engine.syncNow();
 
-    expect(remote.pushed, isEmpty);
-    expect(await store.pending(), hasLength(1));
-    final state = await engine.watchState().first;
-    expect(state.status, SyncStatus.offline);
-    await engine.dispose();
-  });
+      expect(remote.pushed, isEmpty);
+      expect(await store.pending(), hasLength(1));
+      final state = await engine.watchState().first;
+      expect(state.status, SyncStatus.offline);
+      await engine.dispose();
+    },
+  );
 
   test('delete operations call remote.remove (tombstone)', () async {
     final store = FakeQueueStore([op('gone', action: SyncAction.delete)]);

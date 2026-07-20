@@ -27,15 +27,19 @@ class EpubParser implements DocumentParser {
   @override
   Future<Result<DocumentMetadata>> extractMetadata(String filePath) async {
     try {
-      final book = await EpubReader.readBook(await File(filePath).readAsBytes());
+      final book = await EpubReader.readBook(
+        await File(filePath).readAsBytes(),
+      );
       final wordCount = _estimateWords(book);
       final coverPath = await _writeCover(book, filePath);
-      return Result.success(DocumentMetadata(
-        title: book.title ?? p.basenameWithoutExtension(filePath),
-        author: book.author ?? 'Unknown',
-        pageCount: (wordCount / 300).ceil().clamp(1, 1 << 30),
-        coverImagePath: coverPath,
-      ));
+      return Result.success(
+        DocumentMetadata(
+          title: book.title ?? p.basenameWithoutExtension(filePath),
+          author: book.author ?? 'Unknown',
+          pageCount: (wordCount / 300).ceil().clamp(1, 1 << 30),
+          coverImagePath: coverPath,
+        ),
+      );
     } on Object catch (e) {
       return Result.failure(DocumentFailure('Could not read EPUB.', cause: e));
     }
@@ -44,25 +48,32 @@ class EpubParser implements DocumentParser {
   @override
   Future<Result<BookContent>> extractContent(Book book) async {
     try {
-      final epub =
-          await EpubReader.readBook(await File(book.filePath).readAsBytes());
+      final epub = await EpubReader.readBook(
+        await File(book.filePath).readAsBytes(),
+      );
       final chapters = <Chapter>[];
       var offset = 0;
       var order = 0;
 
       void walk(List<EpubChapter> src, int level) {
         for (final ch in src) {
-          final blocks = parseHtmlToBlocks(ch.htmlContent ?? '', startOffset: offset);
+          final blocks = parseHtmlToBlocks(
+            ch.htmlContent ?? '',
+            startOffset: offset,
+          );
           if (blocks.isNotEmpty) {
-            offset = blocks.last.charOffset + (blocks.last.text?.length ?? 0) + 1;
+            offset =
+                blocks.last.charOffset + (blocks.last.text?.length ?? 0) + 1;
           }
-          chapters.add(Chapter(
-            id: 'ch-$order',
-            title: ch.title ?? 'Chapter ${order + 1}',
-            order: order,
-            level: level,
-            blocks: blocks,
-          ));
+          chapters.add(
+            Chapter(
+              id: 'ch-$order',
+              title: ch.title ?? 'Chapter ${order + 1}',
+              order: order,
+              level: level,
+              blocks: blocks,
+            ),
+          );
           order++;
           if (ch.subChapters.isNotEmpty) {
             walk(ch.subChapters, level + 1);
@@ -71,12 +82,14 @@ class EpubParser implements DocumentParser {
       }
 
       walk(epub.chapters, 0);
-      return Result.success(BookContent(
-        bookId: book.id,
-        chapters: chapters,
-        generatedAt: DateTime.now(),
-        wordCount: _estimateWords(epub),
-      ));
+      return Result.success(
+        BookContent(
+          bookId: book.id,
+          chapters: chapters,
+          generatedAt: DateTime.now(),
+          wordCount: _estimateWords(epub),
+        ),
+      );
     } on Object catch (e) {
       return Result.failure(DocumentFailure('Could not parse EPUB.', cause: e));
     }
@@ -97,8 +110,10 @@ class EpubParser implements DocumentParser {
     try {
       final png = img.encodePng(cover);
       final dir = p.dirname(filePath);
-      final coverPath =
-          p.join(dir, '${p.basenameWithoutExtension(filePath)}.cover.png');
+      final coverPath = p.join(
+        dir,
+        '${p.basenameWithoutExtension(filePath)}.cover.png',
+      );
       await File(coverPath).writeAsBytes(png);
       return coverPath;
     } on Object {

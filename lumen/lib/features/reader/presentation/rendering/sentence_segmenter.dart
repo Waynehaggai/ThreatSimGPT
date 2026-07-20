@@ -32,13 +32,15 @@ List<Sentence> segmentBook(BookContent content) {
       final text = block.text;
       if (text == null || text.trim().isEmpty) continue;
       for (final span in splitSentences(text)) {
-        sentences.add(Sentence(
-          index: index++,
-          text: span.text,
-          start: block.charOffset + span.start,
-          end: block.charOffset + span.end,
-          chapterId: chapter.id,
-        ));
+        sentences.add(
+          Sentence(
+            index: index++,
+            text: span.text,
+            start: block.charOffset + span.start,
+            end: block.charOffset + span.end,
+            chapterId: chapter.id,
+          ),
+        );
       }
     }
   }

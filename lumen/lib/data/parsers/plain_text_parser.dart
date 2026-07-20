@@ -38,7 +38,8 @@ class PlainTextParser implements DocumentParser {
       );
     } on Object catch (e) {
       return Result.failure(
-          DocumentFailure('Could not read text file.', cause: e));
+        DocumentFailure('Could not read text file.', cause: e),
+      );
     }
   }
 
@@ -57,7 +58,8 @@ class PlainTextParser implements DocumentParser {
       );
     } on Object catch (e) {
       return Result.failure(
-          DocumentFailure('Could not parse text file.', cause: e));
+        DocumentFailure('Could not parse text file.', cause: e),
+      );
     }
   }
 
@@ -74,12 +76,14 @@ class PlainTextParser implements DocumentParser {
 
     void flushChapter() {
       if (chapterBlocks.isEmpty) return;
-      chapters.add(Chapter(
-        id: 'ch-$chapterOrder',
-        title: chapterTitle,
-        order: chapterOrder,
-        blocks: List.unmodifiable(chapterBlocks),
-      ));
+      chapters.add(
+        Chapter(
+          id: 'ch-$chapterOrder',
+          title: chapterTitle,
+          order: chapterOrder,
+          blocks: List.unmodifiable(chapterBlocks),
+        ),
+      );
       chapterOrder++;
       chapterBlocks = <ContentBlock>[];
     }
@@ -114,18 +118,26 @@ class PlainTextParser implements DocumentParser {
 
     // Bulleted / numbered list.
     if (lines.every((l) => _isListLine(l.trim()))) {
-      final stripped =
-          lines.map((l) => l.trim().replaceFirst(RegExp(r'^([-*•]|\d+\.)\s+'), '')).join('\n');
+      final stripped = lines
+          .map((l) => l.trim().replaceFirst(RegExp(r'^([-*•]|\d+\.)\s+'), ''))
+          .join('\n');
       return ContentBlock(
-          type: BlockType.list, text: stripped, charOffset: charOffset);
+        type: BlockType.list,
+        text: stripped,
+        charOffset: charOffset,
+      );
     }
 
     // Block quote.
     if (lines.every((l) => l.trimLeft().startsWith('>'))) {
-      final stripped =
-          lines.map((l) => l.trimLeft().replaceFirst(RegExp(r'^>\s?'), '')).join('\n');
+      final stripped = lines
+          .map((l) => l.trimLeft().replaceFirst(RegExp(r'^>\s?'), ''))
+          .join('\n');
       return ContentBlock(
-          type: BlockType.quote, text: stripped, charOffset: charOffset);
+        type: BlockType.quote,
+        text: stripped,
+        charOffset: charOffset,
+      );
     }
 
     // Heading heuristic: a short single line that looks like a title.
@@ -139,17 +151,21 @@ class PlainTextParser implements DocumentParser {
     }
 
     return ContentBlock(
-        type: BlockType.paragraph, text: para, charOffset: charOffset);
+      type: BlockType.paragraph,
+      text: para,
+      charOffset: charOffset,
+    );
   }
 
-  bool _isListLine(String line) =>
-      RegExp(r'^([-*•]|\d+\.)\s+').hasMatch(line);
+  bool _isListLine(String line) => RegExp(r'^([-*•]|\d+\.)\s+').hasMatch(line);
 
   bool _looksLikeHeading(String line) {
     if (line.startsWith('#')) return true; // markdown heading
     if (line.length > 64) return false;
-    if (RegExp(r'^(chapter|part|section)\b', caseSensitive: false)
-        .hasMatch(line)) {
+    if (RegExp(
+      r'^(chapter|part|section)\b',
+      caseSensitive: false,
+    ).hasMatch(line)) {
       return true;
     }
     // ALL-CAPS short line with no sentence-ending punctuation.

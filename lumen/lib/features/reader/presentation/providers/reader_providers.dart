@@ -42,8 +42,10 @@ final readerBookProvider = FutureProvider.family<Book, String>((ref, id) async {
 ///
 /// Books flagged `needsOcr` skip step 2 (there is no text layer) and show the
 /// sample until the user runs OCR from the reader.
-final readerContentProvider =
-    FutureProvider.family<BookContent, String>((ref, bookId) async {
+final readerContentProvider = FutureProvider.family<BookContent, String>((
+  ref,
+  bookId,
+) async {
   final book = await ref.watch(readerBookProvider(bookId).future);
 
   // 1. Session OCR cache wins.
@@ -65,16 +67,21 @@ final readerContentProvider =
 });
 
 /// The last-saved position for a book, used to resume exactly.
-final readerResumeProvider =
-    FutureProvider.family<ReadingProgress?, String>((ref, bookId) async {
-  final result = await ref.watch(progressRepositoryProvider).getProgress(bookId);
+final readerResumeProvider = FutureProvider.family<ReadingProgress?, String>((
+  ref,
+  bookId,
+) async {
+  final result =
+      await ref.watch(progressRepositoryProvider).getProgress(bookId);
   return result.valueOrNull;
 });
 
 /// Cross-device resume decision: on open, checks whether another device has a
 /// newer position (→ "Continue from X%?" prompt) or we simply resume locally.
-final resumeDecisionProvider =
-    FutureProvider.family<ResumeDecision, String>((ref, bookId) async {
+final resumeDecisionProvider = FutureProvider.family<ResumeDecision, String>((
+  ref,
+  bookId,
+) async {
   final usecase = ResolveResumePoint(ref.watch(progressRepositoryProvider));
   final result = await usecase(bookId);
   return result.valueOrNull ?? const ResumeDecision();
@@ -159,20 +166,23 @@ class ReaderController extends FamilyNotifier<ReaderUiState, String> {
   void _recordSession() {
     final duration = DateTime.now().difference(_sessionStart);
     if (duration.inSeconds < 5) return; // ignore accidental opens
-    final delta = (_lastPercent - (_sessionStartPercent ?? _lastPercent))
-        .clamp(0.0, 1.0);
-    _statsRepo.recordSession(ReadingSession(
-      bookId: arg,
-      startedAt: _sessionStart,
-      endedAt: DateTime.now(),
-      pagesRead: (delta * _pageCount).round(),
-      wordsRead: (delta * _wordCount).round(),
-      completed: _finished,
-    ));
+    final delta = (_lastPercent - (_sessionStartPercent ?? _lastPercent)).clamp(
+      0.0,
+      1.0,
+    );
+    _statsRepo.recordSession(
+      ReadingSession(
+        bookId: arg,
+        startedAt: _sessionStart,
+        endedAt: DateTime.now(),
+        pagesRead: (delta * _pageCount).round(),
+        wordsRead: (delta * _wordCount).round(),
+        completed: _finished,
+      ),
+    );
   }
 
-  void toggleImmersive() =>
-      state = state.copyWith(immersive: !state.immersive);
+  void toggleImmersive() => state = state.copyWith(immersive: !state.immersive);
 
   void setMode(ReadingMode mode) {
     state = state.copyWith(mode: mode);
@@ -212,10 +222,12 @@ class ReaderController extends FamilyNotifier<ReaderUiState, String> {
     _libraryRepo.getBook(arg).then((r) {
       final book = r.valueOrNull;
       if (book != null) {
-        _libraryRepo.updateBook(book.copyWith(
-          progressPercent: state.percent,
-          lastOpened: DateTime.now(),
-        ));
+        _libraryRepo.updateBook(
+          book.copyWith(
+            progressPercent: state.percent,
+            lastOpened: DateTime.now(),
+          ),
+        );
       }
     });
   }
@@ -223,4 +235,5 @@ class ReaderController extends FamilyNotifier<ReaderUiState, String> {
 
 final readerControllerProvider =
     NotifierProvider.family<ReaderController, ReaderUiState, String>(
-        ReaderController.new);
+  ReaderController.new,
+);

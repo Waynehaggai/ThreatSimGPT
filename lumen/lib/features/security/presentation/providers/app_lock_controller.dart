@@ -24,8 +24,10 @@ class AppLockState {
 
   bool get enabled => method != AppLockMethod.none;
 
-  AppLockState copyWith({bool? locked, AppLockMethod? method}) =>
-      AppLockState(locked: locked ?? this.locked, method: method ?? this.method);
+  AppLockState copyWith({bool? locked, AppLockMethod? method}) => AppLockState(
+        locked: locked ?? this.locked,
+        method: method ?? this.method,
+      );
 }
 
 /// Manages app-lock state: locks on launch (if configured) and auto-locks after
@@ -44,7 +46,10 @@ class AppLockController {
   /// Reads the configured method and locks immediately if one is set.
   void start() {
     final method = _security.lockMethod;
-    state.value = AppLockState(locked: method != AppLockMethod.none, method: method);
+    state.value = AppLockState(
+      locked: method != AppLockMethod.none,
+      method: method,
+    );
   }
 
   /// Feed app lifecycle changes here (from a `WidgetsBindingObserver`).

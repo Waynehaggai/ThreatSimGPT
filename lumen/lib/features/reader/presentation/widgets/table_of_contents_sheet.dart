@@ -33,9 +33,10 @@ class TableOfContentsSheet extends StatelessWidget {
   }
 
   int get _totalChars {
-    final last = content.chapters.isEmpty || content.chapters.last.blocks.isEmpty
-        ? null
-        : content.chapters.last.blocks.last;
+    final last =
+        content.chapters.isEmpty || content.chapters.last.blocks.isEmpty
+            ? null
+            : content.chapters.last.blocks.last;
     return last == null ? 1 : last.charOffset + (last.text?.length ?? 1);
   }
 
@@ -57,8 +58,10 @@ class TableOfContentsSheet extends StatelessWidget {
           ),
           for (final chapter in content.chapters)
             ListTile(
-              contentPadding:
-                  EdgeInsets.only(left: 20 + chapter.level * 16.0, right: 20),
+              contentPadding: EdgeInsets.only(
+                left: 20 + chapter.level * 16.0,
+                right: 20,
+              ),
               title: Text(
                 chapter.title,
                 maxLines: 2,
@@ -71,9 +74,12 @@ class TableOfContentsSheet extends StatelessWidget {
               ),
               selected: chapter.id == currentChapterId,
               onTap: () {
-                final startOffset =
-                    chapter.blocks.isEmpty ? 0 : chapter.blocks.first.charOffset;
-                Navigator.of(context).pop((startOffset / total).clamp(0.0, 1.0));
+                final startOffset = chapter.blocks.isEmpty
+                    ? 0
+                    : chapter.blocks.first.charOffset;
+                Navigator.of(
+                  context,
+                ).pop((startOffset / total).clamp(0.0, 1.0));
               },
             ),
         ],

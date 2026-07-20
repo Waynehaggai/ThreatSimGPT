@@ -15,9 +15,11 @@ class LumenAudioHandler extends BaseAudioHandler with SeekHandler {
     _tts.stateStream.listen(_onTtsState);
     _tts.progressStream.listen((p) {
       // Advance the media session position by sentence index (coarse).
-      playbackState.add(playbackState.value.copyWith(
-        updatePosition: Duration(seconds: p.sentenceIndex),
-      ));
+      playbackState.add(
+        playbackState.value.copyWith(
+          updatePosition: Duration(seconds: p.sentenceIndex),
+        ),
+      );
     });
   }
 
@@ -25,29 +27,37 @@ class LumenAudioHandler extends BaseAudioHandler with SeekHandler {
 
   void _onTtsState(TtsState state) {
     final playing = state == TtsState.playing;
-    playbackState.add(playbackState.value.copyWith(
-      controls: [
-        MediaControl.rewind,
-        if (playing) MediaControl.pause else MediaControl.play,
-        MediaControl.stop,
-        MediaControl.fastForward,
-      ],
-      systemActions: const {MediaAction.seek},
-      processingState: state == TtsState.stopped
-          ? AudioProcessingState.idle
-          : AudioProcessingState.ready,
-      playing: playing,
-    ));
+    playbackState.add(
+      playbackState.value.copyWith(
+        controls: [
+          MediaControl.rewind,
+          if (playing) MediaControl.pause else MediaControl.play,
+          MediaControl.stop,
+          MediaControl.fastForward,
+        ],
+        systemActions: const {MediaAction.seek},
+        processingState: state == TtsState.stopped
+            ? AudioProcessingState.idle
+            : AudioProcessingState.ready,
+        playing: playing,
+      ),
+    );
   }
 
   /// Sets the media notification's title/author for the book being read aloud.
-  void setBook({required String title, required String author, String? artUri}) {
-    mediaItem.add(MediaItem(
-      id: title,
-      title: title,
-      artist: author,
-      artUri: artUri == null ? null : Uri.tryParse(artUri),
-    ));
+  void setBook({
+    required String title,
+    required String author,
+    String? artUri,
+  }) {
+    mediaItem.add(
+      MediaItem(
+        id: title,
+        title: title,
+        artist: author,
+        artUri: artUri == null ? null : Uri.tryParse(artUri),
+      ),
+    );
   }
 
   @override

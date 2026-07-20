@@ -32,18 +32,16 @@ class IsarLibraryRepository implements LibraryRepository {
     // Watch the whole collection reactively, then apply the shared query logic.
     // Hot paths (large libraries) can pre-narrow with native indexes; the
     // predicate/sort semantics stay in one shared, tested place.
-    return _isar.bookModels
-        .where()
-        .watch(fireImmediately: true)
-        .map((rows) =>
-            applyLibraryQuery(rows.map((m) => m.toEntity()).toList(), query));
+    return _isar.bookModels.where().watch(fireImmediately: true).map(
+          (rows) =>
+              applyLibraryQuery(rows.map((m) => m.toEntity()).toList(), query),
+        );
   }
 
   @override
   Future<Result<Book>> getBook(String id) async {
     try {
-      final model =
-          await _isar.bookModels.filter().uidEqualTo(id).findFirst();
+      final model = await _isar.bookModels.filter().uidEqualTo(id).findFirst();
       return model == null
           ? const Result.failure(StorageFailure('Book not found.'))
           : Result.success(model.toEntity());
@@ -100,8 +98,7 @@ class IsarLibraryRepository implements LibraryRepository {
   @override
   Future<Result<void>> deleteBook(String id, {bool permanent = false}) async {
     try {
-      final model =
-          await _isar.bookModels.filter().uidEqualTo(id).findFirst();
+      final model = await _isar.bookModels.filter().uidEqualTo(id).findFirst();
       if (model == null) {
         return const Result.failure(StorageFailure('Book not found.'));
       }
@@ -171,7 +168,8 @@ class IsarLibraryRepository implements LibraryRepository {
   Future<Result<Collection>> createCollection(Collection collection) async {
     try {
       await _isar.writeTxn(
-          () => _isar.collectionModels.put(collection.toModel()));
+        () => _isar.collectionModels.put(collection.toModel()),
+      );
       await _syncQueue.enqueue(
         entityType: SyncEntityType.collection,
         entityId: collection.id,
@@ -180,7 +178,8 @@ class IsarLibraryRepository implements LibraryRepository {
       return Result.success(collection);
     } on Object catch (e) {
       return Result.failure(
-          StorageFailure('Failed to create collection.', cause: e));
+        StorageFailure('Failed to create collection.', cause: e),
+      );
     }
   }
 
@@ -188,7 +187,8 @@ class IsarLibraryRepository implements LibraryRepository {
   Future<Result<void>> updateCollection(Collection collection) async {
     try {
       await _isar.writeTxn(
-          () => _isar.collectionModels.put(collection.toModel()));
+        () => _isar.collectionModels.put(collection.toModel()),
+      );
       await _syncQueue.enqueue(
         entityType: SyncEntityType.collection,
         entityId: collection.id,
@@ -197,7 +197,8 @@ class IsarLibraryRepository implements LibraryRepository {
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(
-          StorageFailure('Failed to update collection.', cause: e));
+        StorageFailure('Failed to update collection.', cause: e),
+      );
     }
   }
 
@@ -223,7 +224,8 @@ class IsarLibraryRepository implements LibraryRepository {
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(
-          StorageFailure('Failed to delete collection.', cause: e));
+        StorageFailure('Failed to delete collection.', cause: e),
+      );
     }
   }
 
@@ -250,7 +252,8 @@ class IsarLibraryRepository implements LibraryRepository {
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(
-          StorageFailure('Failed to set collections.', cause: e));
+        StorageFailure('Failed to set collections.', cause: e),
+      );
     }
   }
 }

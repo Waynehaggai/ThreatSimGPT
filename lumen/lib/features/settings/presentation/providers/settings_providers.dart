@@ -15,5 +15,6 @@ class SettingsNotifier extends Notifier<ReadingSettings> {
   }
 }
 
-final settingsProvider =
-    NotifierProvider<SettingsNotifier, ReadingSettings>(SettingsNotifier.new);
+final settingsProvider = NotifierProvider<SettingsNotifier, ReadingSettings>(
+  SettingsNotifier.new,
+);

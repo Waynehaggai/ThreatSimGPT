@@ -52,8 +52,10 @@ void main() {
     await controller.run('doc.pdf');
     final content = controller.buildContent('b1');
     expect(content, isA<BookContent>());
-    expect(content.blocks.where((b) => b.type == BlockType.paragraph),
-        isNotEmpty);
+    expect(
+      content.blocks.where((b) => b.type == BlockType.paragraph),
+      isNotEmpty,
+    );
     controller.dispose();
   });
 

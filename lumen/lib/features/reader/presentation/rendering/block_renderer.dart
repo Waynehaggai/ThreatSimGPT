@@ -36,7 +36,10 @@ class BlockView extends StatelessWidget {
   Widget build(BuildContext context) {
     return switch (block.type) {
       BlockType.heading => _text(typography.heading(block.level)),
-      BlockType.paragraph => _text(typography.paragraph, align: typography.textAlign),
+      BlockType.paragraph => _text(
+          typography.paragraph,
+          align: typography.textAlign,
+        ),
       BlockType.quote => _Quote(child: _text(typography.quote, palette: true)),
       BlockType.caption => _text(typography.caption, align: TextAlign.center),
       BlockType.list => _ListBlock(text: block.text ?? '', typo: typography),
@@ -46,7 +49,11 @@ class BlockView extends StatelessWidget {
     };
   }
 
-  Widget _text(TextStyle style, {TextAlign align = TextAlign.start, bool palette = false}) {
+  Widget _text(
+    TextStyle style, {
+    TextAlign align = TextAlign.start,
+    bool palette = false,
+  }) {
     final text = block.text ?? '';
     final span = buildAnnotatedSpan(
       text: text,
@@ -132,7 +139,9 @@ class _ListBlock extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('•  ', style: typo.paragraph),
-                Expanded(child: SelectableText(item.trim(), style: typo.paragraph)),
+                Expanded(
+                  child: SelectableText(item.trim(), style: typo.paragraph),
+                ),
               ],
             ),
           ),

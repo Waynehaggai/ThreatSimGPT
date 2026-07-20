@@ -66,9 +66,17 @@ void main() {
     final book = await writeBook(
       'Para one is here.\n\nPara two is here.\n\nPara three is here.',
     );
-    final blocks = (await parser.extractContent(book)).valueOrNull!.blocks.toList();
+    final blocks = (await parser.extractContent(
+      book,
+    ))
+        .valueOrNull!
+        .blocks
+        .toList();
     for (var i = 1; i < blocks.length; i++) {
-      expect(blocks[i].charOffset, greaterThanOrEqualTo(blocks[i - 1].charOffset));
+      expect(
+        blocks[i].charOffset,
+        greaterThanOrEqualTo(blocks[i - 1].charOffset),
+      );
     }
   });
 

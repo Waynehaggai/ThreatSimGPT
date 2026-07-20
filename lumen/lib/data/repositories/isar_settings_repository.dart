@@ -26,8 +26,7 @@ class IsarSettingsRepository implements SettingsRepository {
 
   @override
   Future<ReadingSettings> getSettings() async {
-    final model =
-        await _isar.settingsModels.get(SettingsModel.singletonId);
+    final model = await _isar.settingsModels.get(SettingsModel.singletonId);
     return model?.toEntity() ?? const ReadingSettings();
   }
 
@@ -35,8 +34,7 @@ class IsarSettingsRepository implements SettingsRepository {
   Future<Result<void>> saveSettings(ReadingSettings settings) async {
     try {
       final stamped = settings.copyWith(updatedAt: DateTime.now());
-      await _isar.writeTxn(
-          () => _isar.settingsModels.put(stamped.toModel()));
+      await _isar.writeTxn(() => _isar.settingsModels.put(stamped.toModel()));
       await _syncQueue.enqueue(
         entityType: SyncEntityType.settings,
         entityId: 'current',
@@ -45,7 +43,8 @@ class IsarSettingsRepository implements SettingsRepository {
       return const Result.success(null);
     } on Object catch (e) {
       return Result.failure(
-          StorageFailure('Failed to save settings.', cause: e));
+        StorageFailure('Failed to save settings.', cause: e),
+      );
     }
   }
 }

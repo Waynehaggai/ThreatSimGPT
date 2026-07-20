@@ -47,8 +47,10 @@ class BookmarksSheet extends StatelessWidget {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(32),
-              child: Text('No bookmarks yet.',
-                  style: theme.textTheme.bodyLarge),
+              child: Text(
+                'No bookmarks yet.',
+                style: theme.textTheme.bodyLarge,
+              ),
             ),
           );
         }
@@ -82,8 +84,11 @@ class BookmarksSheet extends StatelessWidget {
                       ? (b.percent != null
                           ? Text('${(b.percent! * 100).round()}%')
                           : null)
-                      : Text(b.previewText!,
-                          maxLines: 2, overflow: TextOverflow.ellipsis),
+                      : Text(
+                          b.previewText!,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                   onTap: () => Navigator.of(context).pop(JumpToBookmark(b)),
                 ),
               ),

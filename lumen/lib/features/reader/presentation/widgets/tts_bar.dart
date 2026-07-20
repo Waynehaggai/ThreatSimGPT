@@ -37,21 +37,20 @@ class TtsBar extends StatelessWidget {
           children: [
             IconButton(
               iconSize: 32,
-              icon: Icon(state.isPlaying
-                  ? Icons.pause_circle_filled_rounded
-                  : Icons.play_circle_fill_rounded),
+              icon: Icon(
+                state.isPlaying
+                    ? Icons.pause_circle_filled_rounded
+                    : Icons.play_circle_fill_rounded,
+              ),
               onPressed: onPlayPause,
             ),
-            IconButton(
-              icon: const Icon(Icons.stop_rounded),
-              onPressed: onStop,
-            ),
+            IconButton(icon: const Icon(Icons.stop_rounded), onPressed: onStop),
             const Spacer(),
             // Playback speed cycler.
             TextButton(
               onPressed: () {
-                final next =
-                    _speeds[(_speeds.indexOf(state.speed) + 1) % _speeds.length];
+                final next = _speeds[
+                    (_speeds.indexOf(state.speed) + 1) % _speeds.length];
                 onSpeed(next);
               },
               child: Text('${state.speed}x'),
@@ -61,9 +60,18 @@ class TtsBar extends StatelessWidget {
               icon: const Icon(Icons.bedtime_outlined),
               onSelected: onSleepTimer,
               itemBuilder: (_) => const [
-                PopupMenuItem(value: Duration(minutes: 5), child: Text('5 min')),
-                PopupMenuItem(value: Duration(minutes: 15), child: Text('15 min')),
-                PopupMenuItem(value: Duration(minutes: 30), child: Text('30 min')),
+                PopupMenuItem(
+                  value: Duration(minutes: 5),
+                  child: Text('5 min'),
+                ),
+                PopupMenuItem(
+                  value: Duration(minutes: 15),
+                  child: Text('15 min'),
+                ),
+                PopupMenuItem(
+                  value: Duration(minutes: 30),
+                  child: Text('30 min'),
+                ),
                 PopupMenuItem(value: null, child: Text('Off')),
               ],
             ),

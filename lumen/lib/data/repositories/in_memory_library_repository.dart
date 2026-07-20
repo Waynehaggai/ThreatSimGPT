@@ -38,11 +38,11 @@ class InMemoryLibraryRepository implements LibraryRepository {
   final Map<String, BookContent> _content = {};
 
   final _booksController = StreamController<List<Book>>.broadcast();
-  final _collectionsController =
-      StreamController<List<Collection>>.broadcast();
+  final _collectionsController = StreamController<List<Collection>>.broadcast();
 
   int _idSeq = 0;
-  String _nextId() => 'book-${DateTime.now().millisecondsSinceEpoch}-${_idSeq++}';
+  String _nextId() =>
+      'book-${DateTime.now().millisecondsSinceEpoch}-${_idSeq++}';
 
   List<Book> get _snapshot => _books.values.toList(growable: false);
 
@@ -53,8 +53,9 @@ class InMemoryLibraryRepository implements LibraryRepository {
   @override
   Stream<List<Book>> watchBooks(LibraryQuery query) async* {
     yield applyLibraryQuery(_snapshot, query);
-    yield* _booksController.stream
-        .map((books) => applyLibraryQuery(books, query));
+    yield* _booksController.stream.map(
+      (books) => applyLibraryQuery(books, query),
+    );
   }
 
   @override

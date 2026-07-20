@@ -84,7 +84,10 @@ class InMemoryAnnotationRepository implements AnnotationRepository {
   }
 
   @override
-  Future<Result<String>> exportNotes(String bookId, {String format = 'md'}) async {
+  Future<Result<String>> exportNotes(
+    String bookId, {
+    String format = 'md',
+  }) async {
     final buffer = StringBuffer('# Notes & Highlights\n\n');
     for (final a in _annotationsFor(bookId)) {
       if (a.selectedText.isNotEmpty) buffer.writeln('> ${a.selectedText}');

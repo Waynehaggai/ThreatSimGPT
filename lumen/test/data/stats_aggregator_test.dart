@@ -23,8 +23,12 @@ void main() {
   test('first session starts a streak and accumulates time/pages', () {
     final s = applySession(
       const ReadingStats(),
-      session(DateTime(2026, 1, 1, 8, 30), DateTime(2026, 1, 1, 9),
-          pages: 20, words: 6000),
+      session(
+        DateTime(2026, 1, 1, 8, 30),
+        DateTime(2026, 1, 1, 9),
+        pages: 20,
+        words: 6000,
+      ),
     );
     expect(s.currentStreakDays, 1);
     expect(s.longestStreakDays, 1);
@@ -37,31 +41,39 @@ void main() {
   });
 
   test('second session same day keeps the streak, adds minutes-today', () {
-    var s = applySession(const ReadingStats(),
-        session(DateTime(2026, 1, 1, 8, 30), DateTime(2026, 1, 1, 9)));
+    var s = applySession(
+      const ReadingStats(),
+      session(DateTime(2026, 1, 1, 8, 30), DateTime(2026, 1, 1, 9)),
+    );
     s = applySession(
-        s, session(DateTime(2026, 1, 1, 19, 50), DateTime(2026, 1, 1, 20)));
+      s,
+      session(DateTime(2026, 1, 1, 19, 50), DateTime(2026, 1, 1, 20)),
+    );
     expect(s.currentStreakDays, 1);
     expect(s.minutesToday, 40);
     expect(s.minutesByHour[9], 30);
     expect(s.minutesByHour[20], 10);
   });
 
-  test('reading the next day increments the streak and resets minutes-today', () {
-    var s = applySession(const ReadingStats(),
-        session(DateTime(2026, 1, 1, 8), DateTime(2026, 1, 1, 8, 30)));
-    s = applySession(
-        s, session(DateTime(2026, 1, 2, 10), DateTime(2026, 1, 2, 10, 20)));
-    expect(s.currentStreakDays, 2);
-    expect(s.longestStreakDays, 2);
-    expect(s.minutesToday, 20);
-  });
+  test(
+    'reading the next day increments the streak and resets minutes-today',
+    () {
+      var s = applySession(
+        const ReadingStats(),
+        session(DateTime(2026, 1, 1, 8), DateTime(2026, 1, 1, 8, 30)),
+      );
+      s = applySession(
+        s,
+        session(DateTime(2026, 1, 2, 10), DateTime(2026, 1, 2, 10, 20)),
+      );
+      expect(s.currentStreakDays, 2);
+      expect(s.longestStreakDays, 2);
+      expect(s.minutesToday, 20);
+    },
+  );
 
   test('a gap of more than one day resets the streak (keeps longest)', () {
-    const base = ReadingStats(
-      currentStreakDays: 3,
-      longestStreakDays: 3,
-    );
+    const base = ReadingStats(currentStreakDays: 3, longestStreakDays: 3);
     final s = applySession(
       base.copyWith(lastReadDate: DateTime(2026, 1, 1)),
       session(DateTime(2026, 1, 5, 9), DateTime(2026, 1, 5, 9, 30)),
@@ -73,8 +85,11 @@ void main() {
   test('completed sessions increment books completed', () {
     final s = applySession(
       const ReadingStats(),
-      session(DateTime(2026, 1, 1, 8), DateTime(2026, 1, 1, 8, 20),
-          completed: true),
+      session(
+        DateTime(2026, 1, 1, 8),
+        DateTime(2026, 1, 1, 8, 20),
+        completed: true,
+      ),
     );
     expect(s.booksCompleted, 1);
   });

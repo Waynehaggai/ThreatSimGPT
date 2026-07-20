@@ -6,7 +6,11 @@ import 'package:lumen/domain/services/security_service.dart';
 import 'package:lumen/features/security/presentation/providers/app_lock_controller.dart';
 
 class FakeSecurity implements SecurityService {
-  FakeSecurity({this.method = AppLockMethod.none, this.authOk = true, this.pin});
+  FakeSecurity({
+    this.method = AppLockMethod.none,
+    this.authOk = true,
+    this.pin,
+  });
   @override
   AppLockMethod method;
   bool authOk;
@@ -74,7 +78,9 @@ void main() {
         shouldAutoLock(
           method: AppLockMethod.pin,
           backgroundedAt: t0,
-          now: t0.add(AppConstants.autoLockGracePeriod + const Duration(seconds: 1)),
+          now: t0.add(
+            AppConstants.autoLockGracePeriod + const Duration(seconds: 1),
+          ),
         ),
         isTrue,
       );
@@ -104,7 +110,9 @@ void main() {
       expect(c.state.value.locked, isFalse);
 
       c.onLifecycle(AppLifecycleState.paused);
-      now = now.add(AppConstants.autoLockGracePeriod + const Duration(minutes: 1));
+      now = now.add(
+        AppConstants.autoLockGracePeriod + const Duration(minutes: 1),
+      );
       c.onLifecycle(AppLifecycleState.resumed);
       expect(c.state.value.locked, isTrue);
     });

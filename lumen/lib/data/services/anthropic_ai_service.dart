@@ -95,11 +95,15 @@ class AnthropicAiService implements AiService {
   }
 
   @override
-  Future<Result<String>> answerQuestion(String question, {required String bookId}) {
+  Future<Result<String>> answerQuestion(
+    String question, {
+    required String bookId,
+  }) {
     // Production RAG injects retrieved book passages into the system prompt;
     // here the question is answered directly (see docs/AI_MODULE.md).
     return _text(
-      system: 'You answer a reader\'s question about the book they are reading. '
+      system:
+          'You answer a reader\'s question about the book they are reading. '
           'Be accurate and concise. If you are unsure, say so.',
       user: question,
       maxTokens: 1024,
@@ -122,7 +126,8 @@ class AnthropicAiService implements AiService {
         '[${i + 1}] ${passages[i].trim()}',
     ].join('\n\n');
     return _text(
-      system: 'You answer a reader\'s question about the book they are reading. '
+      system:
+          'You answer a reader\'s question about the book they are reading. '
           'Use ONLY the numbered passages provided as context. If the passages '
           'do not contain the answer, say you could not find it in the book '
           'rather than guessing. Be accurate and concise.',
@@ -156,13 +161,14 @@ class AnthropicAiService implements AiService {
         'additionalProperties': false,
       },
     );
-    return result.map((json) => Definition(
-          word: '${json['word'] ?? word}',
-          phonetic: json['phonetic'] as String?,
-          meanings: ((json['meanings'] as List?) ?? const [])
-              .map((m) => '$m')
-              .toList(),
-        ));
+    return result.map(
+      (json) => Definition(
+        word: '${json['word'] ?? word}',
+        phonetic: json['phonetic'] as String?,
+        meanings:
+            ((json['meanings'] as List?) ?? const []).map((m) => '$m').toList(),
+      ),
+    );
   }
 
   @override
@@ -192,12 +198,16 @@ class AnthropicAiService implements AiService {
         'additionalProperties': false,
       },
     );
-    return result.map((json) => ((json['cards'] as List?) ?? const [])
-        .map((c) => Flashcard(
+    return result.map(
+      (json) => ((json['cards'] as List?) ?? const [])
+          .map(
+            (c) => Flashcard(
               front: '${(c as Map)['front'] ?? ''}',
               back: '${c['back'] ?? ''}',
-            ))
-        .toList());
+            ),
+          )
+          .toList(),
+    );
   }
 
   // ── request helpers ────────────────────────────────────────────────────
@@ -247,10 +257,12 @@ class AnthropicAiService implements AiService {
       onSuccess: (json) {
         try {
           return Result.success(
-              jsonDecode(_firstText(json)) as Map<String, dynamic>);
+            jsonDecode(_firstText(json)) as Map<String, dynamic>,
+          );
         } on Object catch (e) {
           return Result.failure(
-              UnexpectedFailure('AI returned malformed JSON.', cause: e));
+            UnexpectedFailure('AI returned malformed JSON.', cause: e),
+          );
         }
       },
     );
@@ -258,7 +270,9 @@ class AnthropicAiService implements AiService {
 
   Future<Result<Map<String, dynamic>>> _post(Map<String, dynamic> body) async {
     if (!_config.enabled) {
-      return const Result.failure(UnexpectedFailure('AI features are disabled.'));
+      return const Result.failure(
+        UnexpectedFailure('AI features are disabled.'),
+      );
     }
     try {
       final response = await _client.post(
@@ -273,18 +287,21 @@ class AnthropicAiService implements AiService {
 
       if (response.statusCode != 200) {
         return Result.failure(
-            NetworkFailure('AI request failed (${response.statusCode}).'));
+          NetworkFailure('AI request failed (${response.statusCode}).'),
+        );
       }
 
       final json = jsonDecode(response.body) as Map<String, dynamic>;
       if (json['stop_reason'] == 'refusal') {
         return const Result.failure(
-            UnexpectedFailure('The AI declined this request.'));
+          UnexpectedFailure('The AI declined this request.'),
+        );
       }
       return Result.success(json);
     } on Object catch (e) {
-      return Result.failure(NetworkFailure('Could not reach the AI service.',
-          cause: e));
+      return Result.failure(
+        NetworkFailure('Could not reach the AI service.', cause: e),
+      );
     }
   }
 

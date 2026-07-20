@@ -41,8 +41,10 @@ void main() {
     // Immediately after failure, the op is gated by backoff.
     expect(queue.dueOperations(now), isEmpty);
     // After the backoff window it becomes due again.
-    expect(queue.dueOperations(now.add(const Duration(seconds: 3))),
-        isNotEmpty);
+    expect(
+      queue.dueOperations(now.add(const Duration(seconds: 3))),
+      isNotEmpty,
+    );
   });
 
   test('exponential backoff grows with retry count', () {

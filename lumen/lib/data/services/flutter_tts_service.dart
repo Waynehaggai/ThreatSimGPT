@@ -45,20 +45,27 @@ class FlutterTtsService implements TtsService {
       final raw = await _tts.getVoices as List<dynamic>?;
       final voices = (raw ?? [])
           .whereType<Map<Object?, Object?>>()
-          .map((v) => TtsVoice(
-                id: '${v['name']}',
-                name: '${v['name']}',
-                locale: '${v['locale']}',
-              ))
+          .map(
+            (v) => TtsVoice(
+              id: '${v['name']}',
+              name: '${v['name']}',
+              locale: '${v['locale']}',
+            ),
+          )
           .toList();
       return Result.success(voices);
     } on Object catch (e) {
-      return Result.failure(UnexpectedFailure('Could not list voices.', cause: e));
+      return Result.failure(
+        UnexpectedFailure('Could not list voices.', cause: e),
+      );
     }
   }
 
   @override
-  Future<Result<void>> speak(List<String> sentences, {int startIndex = 0}) async {
+  Future<Result<void>> speak(
+    List<String> sentences, {
+    int startIndex = 0,
+  }) async {
     if (sentences.isEmpty) return const Result.success(null);
     _sentences = sentences;
     _index = startIndex.clamp(0, sentences.length - 1);
@@ -73,11 +80,9 @@ class FlutterTtsService implements TtsService {
     }
     _setState(TtsState.playing);
     final text = _sentences[_index];
-    _progressCtrl.add(TtsProgress(
-      sentenceIndex: _index,
-      charStart: 0,
-      charEnd: text.length,
-    ));
+    _progressCtrl.add(
+      TtsProgress(sentenceIndex: _index, charStart: 0, charEnd: text.length),
+    );
     await _tts.speak(text);
   }
 

@@ -51,8 +51,9 @@ class AskBookController extends FamilyNotifier<List<QaTurn>, String> {
       passages = const <String>[];
     }
 
-    final result =
-        await ref.read(aiServiceProvider).answerAboutBook(q, passages: passages);
+    final result = await ref
+        .read(aiServiceProvider)
+        .answerAboutBook(q, passages: passages);
 
     final resolved = result.fold(
       onSuccess: (answer) =>
@@ -73,4 +74,5 @@ class AskBookController extends FamilyNotifier<List<QaTurn>, String> {
 
 final askBookControllerProvider =
     NotifierProvider.family<AskBookController, List<QaTurn>, String>(
-        AskBookController.new);
+  AskBookController.new,
+);

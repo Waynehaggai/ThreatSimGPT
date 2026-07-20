@@ -13,15 +13,11 @@ import '../../domain/repositories/statistics_repository.dart';
 ///  • `minutesByHour[endHour]` accumulates (most-productive-hours histogram).
 ///  • Reading speed is an exponential moving average of observed WPM.
 ///  • `booksCompleted` increments only when [bookCompleted] is true.
-ReadingStats applySession(
-  ReadingStats current,
-  ReadingSession session,
-) {
+ReadingStats applySession(ReadingStats current, ReadingSession session) {
   final minutes = (session.duration.inSeconds / 60).round();
   final endDay = _dateOnly(session.endedAt);
-  final last = current.lastReadDate == null
-      ? null
-      : _dateOnly(current.lastReadDate!);
+  final last =
+      current.lastReadDate == null ? null : _dateOnly(current.lastReadDate!);
 
   // Streak + minutes-today rollover.
   int streak;

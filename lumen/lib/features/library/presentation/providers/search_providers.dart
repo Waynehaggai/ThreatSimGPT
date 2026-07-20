@@ -20,8 +20,7 @@ final bookSearchProvider = FutureProvider<List<Book>>((ref) async {
 });
 
 /// Highlights and notes whose text matches the query.
-final annotationSearchProvider =
-    FutureProvider<List<Annotation>>((ref) async {
+final annotationSearchProvider = FutureProvider<List<Annotation>>((ref) async {
   final query = ref.watch(searchQueryProvider).trim();
   if (query.isEmpty) return const [];
   final result =

@@ -57,7 +57,8 @@ class ConflictResolver {
 
     // A delete only wins if it is the newer change. An older tombstone must not
     // erase a subsequent edit (the user "un-deleted"/re-edited on another device).
-    if (newer.isDeleted && !older.isDeleted &&
+    if (newer.isDeleted &&
+        !older.isDeleted &&
         newer.updatedAt.isAtSameMomentAs(older.updatedAt)) {
       return older;
     }
@@ -65,10 +66,7 @@ class ConflictResolver {
   }
 
   /// Merge bookmarks by id (same tombstone semantics as annotations).
-  List<Bookmark> mergeBookmarks(
-    List<Bookmark> local,
-    List<Bookmark> remote,
-  ) {
+  List<Bookmark> mergeBookmarks(List<Bookmark> local, List<Bookmark> remote) {
     final byId = <String, Bookmark>{for (final b in local) b.id: b};
     for (final r in remote) {
       byId.putIfAbsent(r.id, () => r);

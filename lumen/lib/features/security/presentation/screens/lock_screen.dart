@@ -40,7 +40,8 @@ class _LockScreenState extends ConsumerState<LockScreen> {
   }
 
   void _submitPin() {
-    final ok = ref.read(appLockControllerProvider).unlockPin(_pinController.text);
+    final ok =
+        ref.read(appLockControllerProvider).unlockPin(_pinController.text);
     if (!ok) {
       setState(() => _error = 'Incorrect PIN');
       _pinController.clear();
@@ -59,8 +60,10 @@ class _LockScreenState extends ConsumerState<LockScreen> {
             children: [
               const Icon(Icons.lock_rounded, size: 56, color: AppColors.seed),
               const SizedBox(height: 16),
-              Text('${AppConstants.appName} is locked',
-                  style: theme.textTheme.titleLarge),
+              Text(
+                '${AppConstants.appName} is locked',
+                style: theme.textTheme.titleLarge,
+              ),
               const SizedBox(height: 24),
               if (widget.method == AppLockMethod.biometric) ...[
                 FilledButton.icon(
@@ -84,7 +87,9 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                 ),
                 const SizedBox(height: 12),
                 FilledButton(
-                    onPressed: _submitPin, child: const Text('Unlock')),
+                  onPressed: _submitPin,
+                  child: const Text('Unlock'),
+                ),
               ],
               if (_error != null) ...[
                 const SizedBox(height: 12),

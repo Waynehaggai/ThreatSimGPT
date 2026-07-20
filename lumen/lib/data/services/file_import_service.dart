@@ -36,8 +36,7 @@ class FileImportService implements ImportService {
 
   Future<Directory> _booksDir() async {
     if (_cachedBooksDir != null) return _cachedBooksDir!;
-    final base = _storageOverride ??
-        await getApplicationDocumentsDirectory();
+    final base = _storageOverride ?? await getApplicationDocumentsDirectory();
     final dir = Directory(p.join(base.path, 'books'));
     if (!dir.existsSync()) dir.createSync(recursive: true);
     return _cachedBooksDir = dir;
@@ -50,7 +49,8 @@ class FileImportService implements ImportService {
       return Result.success(digest.toString());
     } on Object catch (e) {
       return Result.failure(
-          DocumentFailure('Could not read file for checksum.', cause: e));
+        DocumentFailure('Could not read file for checksum.', cause: e),
+      );
     }
   }
 
@@ -109,7 +109,8 @@ class FileImportService implements ImportService {
       return Result.success(book);
     } on Object catch (e) {
       return Result.failure(
-          DocumentFailure('Failed to import file.', cause: e));
+        DocumentFailure('Failed to import file.', cause: e),
+      );
     }
   }
 }

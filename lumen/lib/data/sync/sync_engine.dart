@@ -91,11 +91,13 @@ class SyncEngine implements SyncRepository {
       await _push();
       await _pull();
 
-      _emit(SyncState(
-        status: SyncStatus.idle,
-        pendingCount: (await _queue.pending()).length,
-        lastSyncedAt: _now(),
-      ));
+      _emit(
+        SyncState(
+          status: SyncStatus.idle,
+          pendingCount: (await _queue.pending()).length,
+          lastSyncedAt: _now(),
+        ),
+      );
       return const Result.success(null);
     } on Object catch (e, s) {
       _log.error('Sync cycle failed', e, s);
@@ -115,8 +117,10 @@ class SyncEngine implements SyncRepository {
         await _queue.remove(op.id);
       } on Object catch (e) {
         scheduler.fail(op.id, e, now);
-        final updated =
-            scheduler.all.firstWhere((o) => o.id == op.id, orElse: () => op);
+        final updated = scheduler.all.firstWhere(
+          (o) => o.id == op.id,
+          orElse: () => op,
+        );
         await _queue.saveState(updated);
         _log.warning('Push failed for ${op.entityType.name}:${op.entityId}', e);
       }

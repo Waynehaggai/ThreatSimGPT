@@ -40,12 +40,7 @@ BookContent buildOcrContent(
     generatedAt: DateTime.now(),
     wordCount: wordCount,
     chapters: [
-      Chapter(
-        id: 'ocr-0',
-        title: 'Scanned document',
-        order: 0,
-        blocks: blocks,
-      ),
+      Chapter(id: 'ocr-0', title: 'Scanned document', order: 0, blocks: blocks),
     ],
   );
 }
@@ -62,5 +57,11 @@ Iterable<String> _paragraphs(String text) {
 
 /// Pages whose recognition confidence is below [threshold] — surfaced in the
 /// review UI so the user can check them first.
-Set<int> lowConfidencePages(List<OcrPageResult> pages, {double threshold = 0.6}) =>
-    pages.where((p) => p.confidence < threshold).map((p) => p.pageIndex).toSet();
+Set<int> lowConfidencePages(
+  List<OcrPageResult> pages, {
+  double threshold = 0.6,
+}) =>
+    pages
+        .where((p) => p.confidence < threshold)
+        .map((p) => p.pageIndex)
+        .toSet();

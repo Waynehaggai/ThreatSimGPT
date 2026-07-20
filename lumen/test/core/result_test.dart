@@ -8,10 +8,7 @@ void main() {
       const result = Result<int>.success(42);
       expect(result.isSuccess, isTrue);
       expect(result.valueOrNull, 42);
-      expect(
-        result.fold(onSuccess: (v) => v * 2, onFailure: (_) => -1),
-        84,
-      );
+      expect(result.fold(onSuccess: (v) => v * 2, onFailure: (_) => -1), 84);
     });
 
     test('failure carries a Failure and folds to onFailure', () {

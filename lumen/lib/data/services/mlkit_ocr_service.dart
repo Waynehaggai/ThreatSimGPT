@@ -45,11 +45,13 @@ class MlKitOcrService implements OcrService {
     try {
       final input = InputImage.fromFilePath(imagePath);
       final recognized = await _recognizer.processImage(input);
-      return Result.success(OcrPageResult(
-        pageIndex: 0,
-        text: recognized.text,
-        confidence: _confidence(recognized),
-      ));
+      return Result.success(
+        OcrPageResult(
+          pageIndex: 0,
+          text: recognized.text,
+          confidence: _confidence(recognized),
+        ),
+      );
     } on Object catch (e) {
       return Result.failure(OcrFailure('Image OCR failed.', cause: e));
     }

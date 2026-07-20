@@ -67,15 +67,20 @@ Future<List<Override>> buildProductionOverrides() async {
       importServiceProvider.overrideWithValue(importService),
       syncRepositoryProvider.overrideWithValue(syncEngine),
       libraryRepositoryProvider.overrideWithValue(
-          IsarLibraryRepository(db.isar, syncQueue, importService)),
-      annotationRepositoryProvider
-          .overrideWithValue(IsarAnnotationRepository(db.isar, syncQueue)),
-      progressRepositoryProvider
-          .overrideWithValue(IsarProgressRepository(db.isar, syncQueue)),
-      settingsRepositoryProvider
-          .overrideWithValue(IsarSettingsRepository(db.isar, syncQueue)),
-      statisticsRepositoryProvider
-          .overrideWithValue(IsarStatisticsRepository(db.isar, syncQueue)),
+        IsarLibraryRepository(db.isar, syncQueue, importService),
+      ),
+      annotationRepositoryProvider.overrideWithValue(
+        IsarAnnotationRepository(db.isar, syncQueue),
+      ),
+      progressRepositoryProvider.overrideWithValue(
+        IsarProgressRepository(db.isar, syncQueue),
+      ),
+      settingsRepositoryProvider.overrideWithValue(
+        IsarSettingsRepository(db.isar, syncQueue),
+      ),
+      statisticsRepositoryProvider.overrideWithValue(
+        IsarStatisticsRepository(db.isar, syncQueue),
+      ),
     ];
   } on Object catch (e, s) {
     log.warning('Persistence bootstrap failed; falling back to in-memory.', e);
