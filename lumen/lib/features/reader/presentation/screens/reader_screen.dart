@@ -164,6 +164,24 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
     _clearSelection();
   }
 
+  Future<void> _translateSelection() async {
+    final sel = _pending;
+    if (sel == null) return;
+    final text = sel.text;
+    _clearSelection();
+    final lang = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (_) => const _LanguagePicker(),
+    );
+    if (lang == null || !mounted) return;
+    AiResultSheet.show(
+      context,
+      title: 'Translate → $lang',
+      future: ref.read(aiServiceProvider).translate(text, targetLang: lang),
+    );
+  }
+
   Future<void> _addNote() async {
     final sel = _pending;
     if (sel == null) return;
@@ -271,6 +289,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                                 onExplain:
                                     ref.watch(aiServiceProvider).isEnabled
                                         ? _explainSelection
+                                        : null,
+                                onTranslate:
+                                    ref.watch(aiServiceProvider).isEnabled
+                                        ? _translateSelection
                                         : null,
                               ),
                             ),
@@ -449,6 +471,7 @@ class _TopBar extends ConsumerWidget {
               onSelected: (value) {
                 if (value == 'export') _exportNotes(context, controller);
                 if (value == 'summarize') _summarizeChapter(context, ref);
+                if (value == 'ask') context.push(Routes.askPath(bookId));
               },
               itemBuilder: (_) => [
                 const PopupMenuItem(value: 'export', child: Text('Export notes')),
@@ -456,6 +479,10 @@ class _TopBar extends ConsumerWidget {
                   const PopupMenuItem(
                       value: 'summarize',
                       child: Text('Summarize chapter (AI)')),
+                if (aiEnabled)
+                  const PopupMenuItem(
+                      value: 'ask',
+                      child: Text('Ask about this book (AI)')),
               ],
             ),
           ],
@@ -704,6 +731,48 @@ class _OcrBanner extends StatelessWidget {
             FilledButton(onPressed: onRun, child: const Text('Run OCR')),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// A short list of common target languages for the AI translate action.
+class _LanguagePicker extends StatelessWidget {
+  const _LanguagePicker();
+
+  static const _languages = <String>[
+    'English',
+    'Spanish',
+    'French',
+    'German',
+    'Italian',
+    'Portuguese',
+    'Chinese (Simplified)',
+    'Japanese',
+    'Korean',
+    'Arabic',
+    'Hindi',
+    'Russian',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: ListView(
+        shrinkWrap: true,
+        padding: const EdgeInsets.only(bottom: 12),
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+            child: Text('Translate to',
+                style: Theme.of(context).textTheme.titleMedium),
+          ),
+          for (final lang in _languages)
+            ListTile(
+              title: Text(lang),
+              onTap: () => Navigator.of(context).pop(lang),
+            ),
+        ],
       ),
     );
   }

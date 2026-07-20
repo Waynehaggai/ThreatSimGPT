@@ -20,6 +20,10 @@ abstract final class Routes {
   static const String ocr = '/ocr/:bookId';
   static String ocrPath(String bookId) => '/ocr/$bookId';
 
+  /// AI Q&A about a book: `/ask/:bookId`.
+  static const String ask = '/ask/:bookId';
+  static String askPath(String bookId) => '/ask/$bookId';
+
   static const String search = '/search';
   static const String lock = '/lock';
 
@@ -32,6 +36,7 @@ abstract final class Routes {
   static const String nSettings = 'settings';
   static const String nReader = 'reader';
   static const String nOcr = 'ocr';
+  static const String nAsk = 'ask';
   static const String nSearch = 'search';
   static const String nLock = 'lock';
 }

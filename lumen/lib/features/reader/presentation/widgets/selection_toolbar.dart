@@ -15,6 +15,7 @@ class SelectionToolbar extends StatelessWidget {
     required this.onCopy,
     required this.onDismiss,
     this.onExplain,
+    this.onTranslate,
     super.key,
   });
 
@@ -26,6 +27,9 @@ class SelectionToolbar extends StatelessWidget {
 
   /// AI "Explain" action — shown only when the AI module is enabled.
   final VoidCallback? onExplain;
+
+  /// AI "Translate" action — shown only when the AI module is enabled.
+  final VoidCallback? onTranslate;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +63,12 @@ class SelectionToolbar extends StatelessWidget {
                 tooltip: 'Explain (AI)',
                 icon: const Icon(Icons.auto_awesome_rounded),
                 onPressed: onExplain,
+              ),
+            if (onTranslate != null)
+              IconButton(
+                tooltip: 'Translate (AI)',
+                icon: const Icon(Icons.translate_rounded),
+                onPressed: onTranslate,
               ),
             IconButton(
               tooltip: 'Copy',

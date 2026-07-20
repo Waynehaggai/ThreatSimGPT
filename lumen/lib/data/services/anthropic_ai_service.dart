@@ -107,6 +107,32 @@ class AnthropicAiService implements AiService {
   }
 
   @override
+  Future<Result<String>> answerAboutBook(
+    String question, {
+    required List<String> passages,
+  }) {
+    if (passages.isEmpty) {
+      return answerQuestion(question, bookId: '');
+    }
+    // RAG: ground the answer in the retrieved passages. The passages are
+    // numbered so the model can be told to rely on them and to admit when the
+    // answer isn't present, reducing hallucination.
+    final context = <String>[
+      for (var i = 0; i < passages.length; i++)
+        '[${i + 1}] ${passages[i].trim()}',
+    ].join('\n\n');
+    return _text(
+      system: 'You answer a reader\'s question about the book they are reading. '
+          'Use ONLY the numbered passages provided as context. If the passages '
+          'do not contain the answer, say you could not find it in the book '
+          'rather than guessing. Be accurate and concise.',
+      user: 'Context passages from the book:\n\n$context\n\n'
+          'Question: $question',
+      maxTokens: 1024,
+    );
+  }
+
+  @override
   Future<Result<Definition>> defineWord(String word, {String? sentence}) async {
     final result = await _json(
       system: 'You are a dictionary. Define the given word as used in the '

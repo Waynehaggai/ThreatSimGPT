@@ -12,8 +12,9 @@ without touching the app.
 | `summarizeChapter` | Reader overflow menu → "Summarize chapter" | Prose |
 | `explainPassage` | Selection toolbar → ✦ (multi‑word selection) | Prose |
 | `defineWord` | Selection toolbar → ✦ (single word) | Structured (word/phonetic/meanings) |
-| `translate` | (wired next) | Prose |
-| `answerQuestion` | (wired next) | Prose |
+| `translate` | Selection toolbar → 🌐 → language picker | Prose |
+| `answerAboutBook` | Reader overflow menu → "Ask about this book" (RAG chat panel) | Prose |
+| `answerQuestion` | (raw, non‑RAG; used as the empty‑passage fallback) | Prose |
 | `generateFlashcards` | (wired next) | Structured (Q/A cards) |
 
 Roadmap capabilities (dictionary, translation, Q&A, flashcards, quizzes, mind
@@ -75,17 +76,31 @@ ProviderScope(
 
 With no override, AI stays off and the reader hides its AI actions.
 
-## Retrieval (answerQuestion) — the next step
+## Retrieval (RAG) — grounded Q&A
 
-`answerQuestion` currently answers from the question alone. The production path
-retrieves relevant passages from the book (the reflowed `BookContent` is already
-chunk‑and‑offset friendly) and injects them into the system prompt — classic
-RAG. This is the one AI method that needs the retrieval layer before it's fully
-useful; the others operate on content the caller already holds.
+The "Ask about this book" panel (`answerAboutBook`) uses classic RAG. On each
+question:
+
+1. `retrievePassages` (`features/reader/presentation/rendering/passage_retriever.dart`)
+   scores every text block of the already‑reflowed `BookContent` against the
+   question — a dependency‑free bag‑of‑words TF with an IDF‑style rarity boost
+   and √length normalisation — and returns the top‑N passages. It's a pure
+   function, so it's fast, offline, and unit‑tested; a future upgrade can swap
+   in vector search behind the same signature without touching callers.
+2. `AnthropicAiService.answerAboutBook` numbers those passages into the prompt
+   and instructs the model to answer **only** from them, or say it couldn't find
+   the answer — reducing hallucination. With no passages it falls back to
+   `answerQuestion` (answer from the question alone).
+
+The chat UI lives in `features/reader/presentation/screens/ask_book_screen.dart`,
+driven by `AskBookController` (`providers/ask_book_providers.dart`), reached from
+the reader's overflow menu at route `/ask/:bookId`.
 
 ## Tests
 
 `test/data/anthropic_ai_service_test.dart` exercises request construction
 (endpoint, model, headers, no client‑side key), prose parsing, structured‑output
-parsing (dictionary + flashcards), refusal handling, and HTTP‑error handling —
-all with a mock `http.Client`, no network.
+parsing (dictionary + flashcards), grounded Q&A prompt construction, refusal
+handling, and HTTP‑error handling — all with a mock `http.Client`, no network.
+`test/features/passage_retriever_test.dart` covers the RAG retriever (ranking,
+irrelevant‑query rejection, min‑length filtering, and the result limit).

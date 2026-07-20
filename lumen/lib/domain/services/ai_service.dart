@@ -32,6 +32,15 @@ abstract interface class AiService {
   Future<Result<Definition>> defineWord(String word, {String? sentence});
   Future<Result<String>> translate(String text, {required String targetLang});
   Future<Result<String>> answerQuestion(String question, {required String bookId});
+
+  /// Grounded Q&A: answers [question] using only the retrieved [passages]
+  /// (classic RAG). Callers pass the passages a retriever selected from the
+  /// book so the model stays anchored to the source text.
+  Future<Result<String>> answerAboutBook(
+    String question, {
+    required List<String> passages,
+  });
+
   Future<Result<List<Flashcard>>> generateFlashcards(Chapter chapter);
 }
 
@@ -64,6 +73,10 @@ class DisabledAiService implements AiService {
   @override
   Future<Result<String>> answerQuestion(String question,
           {required String bookId}) async =>
+      _off();
+  @override
+  Future<Result<String>> answerAboutBook(String question,
+          {required List<String> passages}) async =>
       _off();
   @override
   Future<Result<List<Flashcard>>> generateFlashcards(Chapter chapter) async =>

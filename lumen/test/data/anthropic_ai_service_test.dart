@@ -83,6 +83,34 @@ void main() {
     expect(cards.first.back, 'A1');
   });
 
+  test('answerAboutBook grounds the prompt in the retrieved passages', () async {
+    late http.Request captured;
+    final service = _service(MockClient((req) async {
+      captured = req;
+      return _text('Grounded answer.');
+    }));
+
+    final result = await service.answerAboutBook(
+      'Who is the narrator?',
+      passages: ['The narrator is Ishmael.', 'Call me Ishmael.'],
+    );
+
+    expect(result.valueOrNull, 'Grounded answer.');
+    final body = jsonDecode(captured.body) as Map<String, dynamic>;
+    final user = (body['messages'] as List).first['content'] as String;
+    // Both passages are embedded, numbered, in the user turn.
+    expect(user, contains('[1] The narrator is Ishmael.'));
+    expect(user, contains('[2] Call me Ishmael.'));
+    expect(user, contains('Who is the narrator?'));
+  });
+
+  test('answerAboutBook with no passages still answers', () async {
+    final service = _service(MockClient((req) async => _text('Fallback.')));
+    final result =
+        await service.answerAboutBook('A question?', passages: const []);
+    expect(result.valueOrNull, 'Fallback.');
+  });
+
   test('a refusal stop_reason becomes a failure', () async {
     final service = _service(MockClient((req) async => http.Response(
           jsonEncode({'content': [], 'stop_reason': 'refusal'}),
