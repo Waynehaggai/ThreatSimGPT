@@ -31,6 +31,12 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: refresh,
     redirect: (context, state) {
       final auth = ref.read(authStateProvider);
+      // While the auth state is still resolving (e.g. a cold start after the OS
+      // killed the app behind the system file picker), don't redirect yet —
+      // wait for the restored guest session so we don't bounce a signed-in user
+      // onto the login screen.
+      if (auth.isLoading && !auth.hasValue) return null;
+
       final signedIn = auth.valueOrNull != null; // guest counts as signed in
       final loggingIn = state.matchedLocation == Routes.signIn ||
           state.matchedLocation == Routes.register;
