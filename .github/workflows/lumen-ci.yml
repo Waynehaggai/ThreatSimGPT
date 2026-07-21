@@ -64,3 +64,11 @@ jobs:
       - run: dart run build_runner build --delete-conflicting-outputs
       # Debug APK verifies the app compiles end-to-end for a real target.
       - run: flutter build apk --debug
+      # Publish the APK so it can be downloaded from the run and sideloaded
+      # onto an Android device for manual testing.
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: lumen-debug-apk
+          path: lumen/build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
