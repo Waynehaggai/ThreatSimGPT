@@ -20,16 +20,22 @@ class ReflowPaginator {
     required List<ContentBlock> blocks,
     required Size pageSize,
     required TextDirection textDirection,
+    TextScaler textScaler = TextScaler.noScaling,
   }) {
     final heights = [
       for (final block in blocks)
-        _measure(block, pageSize.width, textDirection) +
+        _measure(block, pageSize.width, textDirection, textScaler) +
             typography.blockSpacing,
     ];
     return packer.pack(heights, pageSize.height);
   }
 
-  double _measure(ContentBlock block, double width, TextDirection dir) {
+  double _measure(
+    ContentBlock block,
+    double width,
+    TextDirection dir,
+    TextScaler scaler,
+  ) {
     switch (block.type) {
       case BlockType.image:
         // Estimate a 3:2 image scaled to the column width.
@@ -42,23 +48,50 @@ class ReflowPaginator {
           typography.heading(block.level),
           width,
           dir,
+          scaler,
         );
       case BlockType.quote:
-        return _text(block.text ?? '', typography.quote, width - 16, dir);
+        return _text(
+          block.text ?? '',
+          typography.quote,
+          width - 16,
+          dir,
+          scaler,
+        );
       case BlockType.caption:
-        return _text(block.text ?? '', typography.caption, width, dir);
+        return _text(block.text ?? '', typography.caption, width, dir, scaler);
       case BlockType.code:
-        return _text(block.text ?? '', typography.code, width - 24, dir) + 24;
+        return _text(
+              block.text ?? '',
+              typography.code,
+              width - 24,
+              dir,
+              scaler,
+            ) +
+            24;
       case BlockType.list:
       case BlockType.paragraph:
-        return _text(block.text ?? '', typography.paragraph, width, dir);
+        return _text(
+          block.text ?? '',
+          typography.paragraph,
+          width,
+          dir,
+          scaler,
+        );
     }
   }
 
-  double _text(String text, TextStyle style, double width, TextDirection dir) {
+  double _text(
+    String text,
+    TextStyle style,
+    double width,
+    TextDirection dir,
+    TextScaler scaler,
+  ) {
     final painter = TextPainter(
       text: TextSpan(text: text, style: style),
       textDirection: dir,
+      textScaler: scaler,
       maxLines: null,
     )..layout(maxWidth: width);
     return painter.height;

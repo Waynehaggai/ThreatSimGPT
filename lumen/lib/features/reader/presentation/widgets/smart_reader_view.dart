@@ -123,6 +123,10 @@ class _SmartReaderViewState extends State<SmartReaderView> {
 
   // ── Page-turn (paginated) ──────────────────────────────────────────────
   Widget _buildPaginated(BuildContext context) {
+    // The device's system font scale must feed the height measurement so the
+    // packer matches what actually renders — otherwise a phone with enlarged
+    // system text over-fills each page and the column overflows.
+    final textScaler = MediaQuery.textScalerOf(context);
     return LayoutBuilder(
       builder: (context, constraints) {
         final margin = widget.typography.horizontalMargin;
@@ -134,6 +138,7 @@ class _SmartReaderViewState extends State<SmartReaderView> {
           blocks: _blocks,
           pageSize: pageSize,
           textDirection: Directionality.of(context),
+          textScaler: textScaler,
         );
         if (ranges.isEmpty) return const SizedBox.shrink();
 
@@ -141,7 +146,9 @@ class _SmartReaderViewState extends State<SmartReaderView> {
           // Rebuild the controller only when the pagination actually changes.
           key: ValueKey(
             '${constraints.maxWidth}x${constraints.maxHeight}'
-            '-${widget.typography.settings.fontSizeSp}-${ranges.length}',
+            '-${widget.typography.settings.fontSizeSp}'
+            '-${textScaler.scale(widget.typography.settings.fontSizeSp)}'
+            '-${ranges.length}',
           ),
           blocks: _blocks,
           ranges: ranges,
@@ -220,22 +227,28 @@ class _PaginatedScrollState extends State<_PaginatedScroll> {
         final range = widget.ranges[page];
         return Padding(
           padding: EdgeInsets.fromLTRB(widget.margin, 24, widget.margin, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (var i = range.start; i < range.end; i++) ...[
-                BlockView(
-                  block: widget.blocks[i],
-                  typography: widget.typography,
-                  annotations: annotationsForBlock(
-                    widget.annotations,
-                    widget.blocks[i],
+          // Non-scrollable viewport as insurance: measurement matches rendering
+          // closely, but any sub-pixel drift should crop quietly here rather
+          // than surface a RenderFlex overflow band across the page.
+          child: SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var i = range.start; i < range.end; i++) ...[
+                  BlockView(
+                    block: widget.blocks[i],
+                    typography: widget.typography,
+                    annotations: annotationsForBlock(
+                      widget.annotations,
+                      widget.blocks[i],
+                    ),
+                    onSelect: widget.onSelect,
                   ),
-                  onSelect: widget.onSelect,
-                ),
-                SizedBox(height: widget.typography.blockSpacing),
+                  SizedBox(height: widget.typography.blockSpacing),
+                ],
               ],
-            ],
+            ),
           ),
         );
       },
