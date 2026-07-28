@@ -238,28 +238,22 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                 return Stack(
                   children: [
                     Positioned.fill(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => ref
-                            .read(
-                              readerControllerProvider(widget.bookId).notifier,
-                            )
-                            .toggleImmersive(),
-                        // SafeArea keeps text off the status bar / notch and
-                        // system nav bar, so even the immersive full-screen
-                        // view retains comfortable top and bottom padding.
-                        child: SafeArea(
-                          child: _ReaderSurface(
-                            bookId: widget.bookId,
-                            book: book,
-                            mode: ui.mode,
-                            palette: palette,
-                            jumpPercent: _jumpPercent,
-                            annotations: allAnnotations,
-                            onSelect: (start, end, text) => setState(
-                              () => _pending =
-                                  (start: start, end: end, text: text),
-                            ),
+                      // SafeArea keeps text off the status bar / notch and
+                      // system nav bar, so even the immersive full-screen view
+                      // retains comfortable top and bottom padding. Tap handling
+                      // (turn page vs. toggle chrome) lives inside the surface so
+                      // it can respect the reading mode's own gestures.
+                      child: SafeArea(
+                        child: _ReaderSurface(
+                          bookId: widget.bookId,
+                          book: book,
+                          mode: ui.mode,
+                          palette: palette,
+                          jumpPercent: _jumpPercent,
+                          annotations: allAnnotations,
+                          onSelect: (start, end, text) => setState(
+                            () =>
+                                _pending = (start: start, end: end, text: text),
                           ),
                         ),
                       ),
@@ -381,12 +375,15 @@ class _ReaderSurface extends ConsumerWidget {
     final initialPercent = jumpPercent ?? resume?.percent ?? 0.0;
 
     if (mode == ReadingMode.original) {
-      return OriginalReaderView(
-        key: ValueKey('orig-$jumpPercent'),
-        filePath: book.filePath,
-        initialPercent: initialPercent,
-        onProgress: (percent, page, count) =>
-            controller.onPositionChanged(percent: percent, charOffset: 0),
+      return GestureDetector(
+        onTap: controller.toggleImmersive,
+        child: OriginalReaderView(
+          key: ValueKey('orig-$jumpPercent'),
+          filePath: book.filePath,
+          initialPercent: initialPercent,
+          onProgress: (percent, page, count) =>
+              controller.onPositionChanged(percent: percent, charOffset: 0),
+        ),
       );
     }
 
@@ -412,6 +409,7 @@ class _ReaderSurface extends ConsumerWidget {
           initialPercent: initialPercent,
           annotations: annotations,
           onSelect: onSelect,
+          onToggleChrome: controller.toggleImmersive,
           onPosition: ({required percent, required charOffset, chapterId}) =>
               controller.onPositionChanged(
             percent: percent,

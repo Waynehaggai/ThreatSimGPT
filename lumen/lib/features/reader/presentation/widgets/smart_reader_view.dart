@@ -44,6 +44,7 @@ class SmartReaderView extends StatefulWidget {
     required this.onPosition,
     this.annotations = const [],
     this.onSelect,
+    this.onToggleChrome,
     super.key,
   });
 
@@ -58,6 +59,10 @@ class SmartReaderView extends StatefulWidget {
 
   /// Fired when the user selects text (absolute offsets + the selected string).
   final BlockSelected? onSelect;
+
+  /// Fired on a centre tap so the reader can show/hide its chrome. Side and
+  /// bottom taps turn the page instead (page-turn mode only).
+  final VoidCallback? onToggleChrome;
 
   @override
   State<SmartReaderView> createState() => _SmartReaderViewState();
@@ -107,21 +112,61 @@ class _SmartReaderViewState extends State<SmartReaderView> {
 
   // ── Continuous vertical scroll ─────────────────────────────────────────
   Widget _buildContinuous(BuildContext context) {
-    return _ContinuousScroll(
-      blocks: _blocks,
-      typography: widget.typography,
-      annotations: widget.annotations,
-      onSelect: widget.onSelect,
-      initialPercent: widget.initialPercent,
-      onPercent: (percent) => widget.onPosition(
-        percent: percent,
-        charOffset: _charOffsetFor(percent),
-        chapterId: _chapterFor(percent),
+    return GestureDetector(
+      onTap: widget.onToggleChrome,
+      child: _ContinuousScroll(
+        blocks: _blocks,
+        typography: widget.typography,
+        annotations: widget.annotations,
+        onSelect: widget.onSelect,
+        initialPercent: widget.initialPercent,
+        onPercent: (percent) => widget.onPosition(
+          percent: percent,
+          charOffset: _charOffsetFor(percent),
+          chapterId: _chapterFor(percent),
+        ),
       ),
     );
   }
 
   // ── Page-turn (paginated) ──────────────────────────────────────────────
+
+  // Pagination is expensive (a TextPainter.layout per block), so it is cached
+  // and only recomputed when an input that affects layout actually changes —
+  // never on incidental rebuilds (page turns, TTS ticks, annotation edits).
+  List<PageRange>? _cachedRanges;
+  Object? _cachedKey;
+
+  List<PageRange> _paginate(
+    Size pageSize,
+    TextDirection dir,
+    TextScaler scaler,
+  ) {
+    final s = widget.typography.settings;
+    final key = (
+      pageSize,
+      dir,
+      scaler.scale(s.fontSizeSp),
+      s.fontSizeSp,
+      s.lineHeight,
+      s.paragraphSpacing,
+      s.horizontalMargin,
+      s.fontWeight,
+      s.fontFamily,
+      s.textAlign,
+    );
+    if (_cachedRanges != null && key == _cachedKey) return _cachedRanges!;
+    final ranges = ReflowPaginator(widget.typography).paginate(
+      blocks: _blocks,
+      pageSize: pageSize,
+      textDirection: dir,
+      textScaler: scaler,
+    );
+    _cachedRanges = ranges;
+    _cachedKey = key;
+    return ranges;
+  }
+
   Widget _buildPaginated(BuildContext context) {
     // The device's system font scale must feed the height measurement so the
     // packer matches what actually renders — otherwise a phone with enlarged
@@ -134,12 +179,8 @@ class _SmartReaderViewState extends State<SmartReaderView> {
           constraints.maxWidth - margin * 2,
           constraints.maxHeight - 96, // room for top/bottom chrome
         );
-        final ranges = ReflowPaginator(widget.typography).paginate(
-          blocks: _blocks,
-          pageSize: pageSize,
-          textDirection: Directionality.of(context),
-          textScaler: textScaler,
-        );
+        final ranges =
+            _paginate(pageSize, Directionality.of(context), textScaler);
         if (ranges.isEmpty) return const SizedBox.shrink();
 
         return _PaginatedScroll(
@@ -155,6 +196,7 @@ class _SmartReaderViewState extends State<SmartReaderView> {
           typography: widget.typography,
           annotations: widget.annotations,
           onSelect: widget.onSelect,
+          onToggleChrome: widget.onToggleChrome,
           margin: margin,
           initialPercent: widget.initialPercent,
           onPercent: (percent) => widget.onPosition(
@@ -176,6 +218,7 @@ class _PaginatedScroll extends StatefulWidget {
     required this.typography,
     required this.annotations,
     required this.onSelect,
+    required this.onToggleChrome,
     required this.margin,
     required this.initialPercent,
     required this.onPercent,
@@ -187,6 +230,7 @@ class _PaginatedScroll extends StatefulWidget {
   final ReaderTypography typography;
   final List<Annotation> annotations;
   final BlockSelected? onSelect;
+  final VoidCallback? onToggleChrome;
   final double margin;
   final double initialPercent;
   final ValueChanged<double> onPercent;
@@ -215,40 +259,111 @@ class _PaginatedScrollState extends State<_PaginatedScroll> {
     super.dispose();
   }
 
+  /// The page currently settled under the viewport.
+  int get _currentPage =>
+      (_controller.hasClients ? _controller.page : null)?.round() ??
+      _controller.initialPage;
+
+  void _turn(int delta) {
+    final target = (_currentPage + delta).clamp(0, widget.ranges.length - 1);
+    if (target == _currentPage) return;
+    _controller.animateToPage(
+      target,
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  /// Maps a tap position to an action: left third → previous, right third or
+  /// bottom strip → next, centre → toggle the reader chrome.
+  void _onTapAt(Offset pos, Size size) {
+    if (pos.dy > size.height * 0.82) {
+      _turn(1); // bottom strip advances — reachable one-handed
+    } else if (pos.dx < size.width * 0.30) {
+      _turn(-1);
+    } else if (pos.dx > size.width * 0.70) {
+      _turn(1);
+    } else {
+      widget.onToggleChrome?.call();
+    }
+  }
+
+  // A pointer is only treated as a tap (not a swipe or a long-press for text
+  // selection) when it lifts quickly and close to where it went down.
+  Offset? _downPos;
+  DateTime? _downAt;
+
+  void _onPointerDown(PointerDownEvent e) {
+    _downPos = e.localPosition;
+    _downAt = DateTime.now();
+  }
+
+  void _onPointerUp(PointerUpEvent e, Size size) {
+    final down = _downPos;
+    final at = _downAt;
+    _downPos = null;
+    _downAt = null;
+    if (down == null || at == null) return;
+    final moved = (e.localPosition - down).distance;
+    final elapsed = DateTime.now().difference(at);
+    // A drag (swipe to turn) or a long-press (text selection) is not a tap.
+    if (moved > 14 || elapsed > const Duration(milliseconds: 300)) return;
+    _onTapAt(e.localPosition, size);
+  }
+
   @override
   Widget build(BuildContext context) {
     final count = widget.ranges.length;
-    return PageView.builder(
-      controller: _controller,
-      itemCount: count,
-      onPageChanged: (page) =>
-          widget.onPercent(count <= 1 ? 0.0 : page / (count - 1)),
-      itemBuilder: (context, page) {
-        final range = widget.ranges[page];
-        return Padding(
-          padding: EdgeInsets.fromLTRB(widget.margin, 24, widget.margin, 24),
-          // Non-scrollable viewport as insurance: measurement matches rendering
-          // closely, but any sub-pixel drift should crop quietly here rather
-          // than surface a RenderFlex overflow band across the page.
-          child: SingleChildScrollView(
-            physics: const NeverScrollableScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (var i = range.start; i < range.end; i++) ...[
-                  BlockView(
-                    block: widget.blocks[i],
-                    typography: widget.typography,
-                    annotations: annotationsForBlock(
-                      widget.annotations,
-                      widget.blocks[i],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = constraints.biggest;
+        // A passive Listener (not a GestureDetector) reads raw pointer events,
+        // so tap-to-turn works even over selectable text — which would
+        // otherwise win the gesture arena — while still leaving swipe-to-turn
+        // and long-press selection untouched.
+        return Listener(
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: _onPointerDown,
+          onPointerUp: (e) => _onPointerUp(e, size),
+          child: PageView.builder(
+            controller: _controller,
+            itemCount: count,
+            onPageChanged: (page) =>
+                widget.onPercent(count <= 1 ? 0.0 : page / (count - 1)),
+            itemBuilder: (context, page) {
+              final range = widget.ranges[page];
+              // Isolate each page's raster so turning one doesn't repaint the
+              // neighbour, keeping the swipe/turn animation smooth.
+              return RepaintBoundary(
+                child: Padding(
+                  padding:
+                      EdgeInsets.fromLTRB(widget.margin, 24, widget.margin, 24),
+                  // Non-scrollable viewport as insurance: measurement matches
+                  // rendering closely, but any sub-pixel drift should crop
+                  // quietly rather than surface a RenderFlex overflow band.
+                  child: SingleChildScrollView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (var i = range.start; i < range.end; i++) ...[
+                          BlockView(
+                            block: widget.blocks[i],
+                            typography: widget.typography,
+                            annotations: annotationsForBlock(
+                              widget.annotations,
+                              widget.blocks[i],
+                            ),
+                            onSelect: widget.onSelect,
+                          ),
+                          SizedBox(height: widget.typography.blockSpacing),
+                        ],
+                      ],
                     ),
-                    onSelect: widget.onSelect,
                   ),
-                  SizedBox(height: widget.typography.blockSpacing),
-                ],
-              ],
-            ),
+                ),
+              );
+            },
           ),
         );
       },
