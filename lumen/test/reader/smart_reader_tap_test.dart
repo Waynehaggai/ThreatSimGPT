@@ -54,8 +54,11 @@ void main() {
 
   testWidgets('tapping the right side turns to the next page', (tester) async {
     var percent = 0.0;
-    await pumpReader(tester,
-        onPercent: (p) => percent = p, onToggleChrome: () {});
+    await pumpReader(
+      tester,
+      onPercent: (p) => percent = p,
+      onToggleChrome: () {},
+    );
 
     final size = tester.getSize(find.byType(SmartReaderView));
     await tester.tapAt(Offset(size.width * 0.9, size.height * 0.5));
@@ -66,8 +69,11 @@ void main() {
 
   testWidgets('tapping the left side turns back', (tester) async {
     var percent = 0.0;
-    await pumpReader(tester,
-        onPercent: (p) => percent = p, onToggleChrome: () {});
+    await pumpReader(
+      tester,
+      onPercent: (p) => percent = p,
+      onToggleChrome: () {},
+    );
     final size = tester.getSize(find.byType(SmartReaderView));
 
     await tester.tapAt(Offset(size.width * 0.9, size.height * 0.5)); // next
