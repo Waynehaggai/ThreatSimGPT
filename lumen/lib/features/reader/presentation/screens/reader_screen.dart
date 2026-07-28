@@ -245,16 +245,21 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen> {
                               readerControllerProvider(widget.bookId).notifier,
                             )
                             .toggleImmersive(),
-                        child: _ReaderSurface(
-                          bookId: widget.bookId,
-                          book: book,
-                          mode: ui.mode,
-                          palette: palette,
-                          jumpPercent: _jumpPercent,
-                          annotations: allAnnotations,
-                          onSelect: (start, end, text) => setState(
-                            () =>
-                                _pending = (start: start, end: end, text: text),
+                        // SafeArea keeps text off the status bar / notch and
+                        // system nav bar, so even the immersive full-screen
+                        // view retains comfortable top and bottom padding.
+                        child: SafeArea(
+                          child: _ReaderSurface(
+                            bookId: widget.bookId,
+                            book: book,
+                            mode: ui.mode,
+                            palette: palette,
+                            jumpPercent: _jumpPercent,
+                            annotations: allAnnotations,
+                            onSelect: (start, end, text) => setState(
+                              () => _pending =
+                                  (start: start, end: end, text: text),
+                            ),
                           ),
                         ),
                       ),
@@ -441,7 +446,7 @@ class _TopBar extends ConsumerWidget {
     final aiEnabled = ref.watch(aiServiceProvider).isEnabled;
 
     return Material(
-      color: palette.background.withValues(alpha: 0.96),
+      color: palette.background,
       child: SafeArea(
         bottom: false,
         child: Row(
@@ -679,7 +684,7 @@ class _BottomBar extends ConsumerWidget {
     );
 
     return Material(
-      color: palette.background.withValues(alpha: 0.96),
+      color: palette.background,
       child: SafeArea(
         top: false,
         child: Padding(

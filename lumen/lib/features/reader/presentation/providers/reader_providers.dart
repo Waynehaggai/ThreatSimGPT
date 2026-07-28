@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -122,7 +123,12 @@ class ReaderUiState {
 /// Owns reader UI state and persists reading position (debounced) so the user
 /// resumes exactly where they stopped, on this and every other device.
 class ReaderController extends FamilyNotifier<ReaderUiState, String> {
+  /// How long the chrome (top/bottom bars) stays up before auto-hiding into the
+  /// full-screen reading view.
+  static const _autoHideAfter = Duration(seconds: 3);
+
   late final Debouncer _debouncer;
+  Timer? _autoHideTimer;
 
   // Captured at build time so the dispose-time flush never touches `ref` after
   // the provider is disposed (which would throw).
@@ -151,9 +157,21 @@ class ReaderController extends FamilyNotifier<ReaderUiState, String> {
       // Flush any pending position write when leaving the reader.
       _debouncer.flush(_persistNow);
       _debouncer.dispose();
+      _autoHideTimer?.cancel();
       _recordSession();
     });
+    // Chrome starts visible on open, then fades into the full-screen view.
+    _scheduleAutoHide();
     return const ReaderUiState();
+  }
+
+  /// (Re)starts the countdown that hides the chrome after [_autoHideAfter] of
+  /// no interaction, yielding an immersive full-screen reading view.
+  void _scheduleAutoHide() {
+    _autoHideTimer?.cancel();
+    _autoHideTimer = Timer(_autoHideAfter, () {
+      if (!state.immersive) state = state.copyWith(immersive: true);
+    });
   }
 
   /// Called by the reader once the book + content are known, so a session can
@@ -182,7 +200,15 @@ class ReaderController extends FamilyNotifier<ReaderUiState, String> {
     );
   }
 
-  void toggleImmersive() => state = state.copyWith(immersive: !state.immersive);
+  void toggleImmersive() {
+    final showChrome = state.immersive; // tapping while immersive reveals it
+    state = state.copyWith(immersive: !showChrome);
+    if (showChrome) {
+      _scheduleAutoHide(); // now visible → start the auto-hide countdown
+    } else {
+      _autoHideTimer?.cancel(); // now hidden → nothing to hide
+    }
+  }
 
   void setMode(ReadingMode mode) {
     state = state.copyWith(mode: mode);
@@ -203,6 +229,8 @@ class ReaderController extends FamilyNotifier<ReaderUiState, String> {
       charOffset: charOffset,
       chapterId: chapterId,
     );
+    // Turning pages while the chrome is up counts as use: keep it up a bit more.
+    if (!state.immersive) _scheduleAutoHide();
     _debouncer(_persistNow);
   }
 
