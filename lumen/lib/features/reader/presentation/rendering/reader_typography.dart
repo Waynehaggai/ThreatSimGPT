@@ -68,6 +68,13 @@ class ReaderTypography {
 
   double get horizontalMargin => settings.horizontalMargin;
 
+  /// First-line indent for body paragraphs — the classic printed-book cue that
+  /// a new paragraph has begun. Scales with the font size (~1.4em).
+  double get paragraphIndent => settings.fontSizeSp * 1.4;
+
+  /// Left indent applied to list items so they sit in from the body text.
+  double get listIndent => settings.fontSizeSp * 1.1;
+
   // Treat the platform default sentinel as "no explicit family".
   String? get _familyOrNull =>
       settings.fontFamily.isEmpty ? null : settings.fontFamily;

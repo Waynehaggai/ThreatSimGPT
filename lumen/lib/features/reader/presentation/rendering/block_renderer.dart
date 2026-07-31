@@ -39,6 +39,7 @@ class BlockView extends StatelessWidget {
       BlockType.paragraph => _text(
           typography.paragraph,
           align: typography.textAlign,
+          firstLineIndent: typography.paragraphIndent,
         ),
       BlockType.quote => _Quote(child: _text(typography.quote, palette: true)),
       BlockType.caption => _text(typography.caption, align: TextAlign.center),
@@ -53,23 +54,39 @@ class BlockView extends StatelessWidget {
     TextStyle style, {
     TextAlign align = TextAlign.start,
     bool palette = false,
+    double firstLineIndent = 0,
   }) {
     final text = block.text ?? '';
-    final span = buildAnnotatedSpan(
+    final base = buildAnnotatedSpan(
       text: text,
       baseOffset: block.charOffset,
       style: style,
       annotations: annotations,
-    );
+    ) as TextSpan;
+
+    // A leading WidgetSpan gives the printed-book first-line indent. It occupies
+    // one slot in the selection's index space, so selection offsets are shifted
+    // back by [leading] to stay aligned with the logical text.
+    final indent = firstLineIndent > 0;
+    final leading = indent ? 1 : 0;
+    final span = indent
+        ? TextSpan(
+            children: [
+              WidgetSpan(child: SizedBox(width: firstLineIndent)),
+              base,
+            ],
+          )
+        : base;
+
     return SelectableText.rich(
-      span as TextSpan,
+      span,
       textAlign: align,
       onSelectionChanged: onSelect == null
           ? null
           : (selection, _) {
               if (!selection.isValid || selection.isCollapsed) return;
-              final start = selection.start.clamp(0, text.length);
-              final end = selection.end.clamp(0, text.length);
+              final start = (selection.start - leading).clamp(0, text.length);
+              final end = (selection.end - leading).clamp(0, text.length);
               if (end > start) {
                 onSelect!(
                   block.charOffset + start,
@@ -126,25 +143,44 @@ class _ListBlock extends StatelessWidget {
   final String text;
   final ReaderTypography typo;
 
+  // Matches an item's own leading marker ("1.", "1)", "a)", "iv.", "•", "-").
+  static final _marker = RegExp(
+    r'^(\d{1,3}[.)]|[a-zA-Z][.)]|[ivxlcdm]{1,5}[.)]|[-•*▪◦‣·])\s+',
+    caseSensitive: false,
+  );
+
   @override
   Widget build(BuildContext context) {
-    final items = text.split('\n').where((l) => l.trim().isNotEmpty);
-    return Column(
+    final items =
+        text.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty);
+    return Padding(
+      padding: EdgeInsets.only(left: typo.listIndent),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final item in items)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: _hangingRow(item),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// A list row with a hanging indent: the marker sits in the gutter and any
+  /// wrapped body lines align under the text, not under the marker. Items that
+  /// already carry a marker (e.g. parsed numbered points) keep it; others get a
+  /// bullet.
+  Widget _hangingRow(String item) {
+    final match = _marker.firstMatch(item);
+    final marker = match != null ? match.group(0)! : '•  ';
+    final body = match != null ? item.substring(match.end) : item;
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final item in items)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('•  ', style: typo.paragraph),
-                Expanded(
-                  child: SelectableText(item.trim(), style: typo.paragraph),
-                ),
-              ],
-            ),
-          ),
+        Text(marker, style: typo.paragraph),
+        Expanded(child: SelectableText(body, style: typo.paragraph)),
       ],
     );
   }
