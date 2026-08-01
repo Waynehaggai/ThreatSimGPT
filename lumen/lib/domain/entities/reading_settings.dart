@@ -10,7 +10,7 @@ class ReadingSettings {
     this.lineHeight = 1.5,
     this.paragraphSpacing = 12.0,
     this.horizontalMargin = 24.0,
-    this.textAlign = ReadingTextAlign.start,
+    this.textAlign = ReadingTextAlign.justify,
     this.theme = ReadingTheme.light,
     this.pageNavigation = PageNavigation.pageTurn,
     this.brightnessOverride,
