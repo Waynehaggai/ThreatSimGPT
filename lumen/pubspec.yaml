@@ -1,0 +1,100 @@
+name: lumen
+description: "Lumen — Intelligent Reading Platform. Read Anything. Anywhere. Forever."
+publish_to: "none"
+version: 0.1.0+1
+
+# Lumen targets the latest stable Flutter/Dart toolchain.
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+  flutter: ">=3.27.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # ── State management & DI ────────────────────────────────────────────────
+  # Riverpod is used manually (Provider / NotifierProvider.family), not via
+  # codegen, so riverpod_annotation/riverpod_generator are intentionally absent.
+  flutter_riverpod: ^2.5.1
+
+  # ── Navigation ───────────────────────────────────────────────────────────
+  go_router: ^14.2.7
+
+  # ── Local persistence (offline-first) ────────────────────────────────────
+  # Isar is the primary embedded DB (fast, indexed, reactive queries).
+  # Uses the maintained community fork; its generator supports the current
+  # analyzer/build toolchain, unlike the unmaintained original isar_generator.
+  isar_community: ^3.3.2
+  isar_community_flutter_libs: ^3.3.2
+  # Hive is used for lightweight, schema-less key/value caches.
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  # Secure storage for tokens / encryption keys.
+  flutter_secure_storage: ^9.2.2
+  path: ^1.9.0
+  path_provider: ^2.1.4
+
+  # ── Firebase (cloud sync backend) ────────────────────────────────────────
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
+  firebase_storage: ^12.3.4
+  google_sign_in: ^6.2.1
+  sign_in_with_apple: ^6.1.2
+
+  # ── Document import / parsing / reading engine ───────────────────────────
+  file_picker: ^8.1.2       # Native file chooser for import
+  pdfrx: ^1.0.86            # High-performance PDF rendering (Original Mode)
+  epub_pro: ^5.6.0          # EPUB parsing (maintained epubx fork; image ^4.x)
+  syncfusion_flutter_pdf: ^33.2.13  # PDF text/structure extraction (intl ^0.20)
+  archive: ^4.0.7           # DOCX (zip) unpacking (aligned with epub_pro)
+  xml: ^6.5.0               # DOCX (OpenXML) parsing
+  html: ^0.15.4             # EPUB/DOCX HTML content → blocks
+  image: ^4.2.0             # Cover image encoding
+
+  # ── OCR & TTS ────────────────────────────────────────────────────────────
+  google_mlkit_text_recognition: ^0.13.1
+  flutter_tts: ^4.0.2
+  audio_service: ^0.18.15   # Background playback + lock-screen controls
+
+  # ── Security ─────────────────────────────────────────────────────────────
+  local_auth: ^2.3.0        # Fingerprint / Face ID / device PIN
+
+  # ── Networking / connectivity ────────────────────────────────────────────
+  connectivity_plus: ^6.0.5
+  http: ^1.2.2               # AI module → Claude Messages API (via a proxy)
+
+  # ── Utilities ────────────────────────────────────────────────────────────
+  crypto: ^3.0.5
+  uuid: ^4.5.1
+  intl: ^0.20.2             # pinned to 0.20.2 by flutter_localizations (SDK)
+  collection: ^1.18.0
+  logging: ^1.2.0
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+  # ── Code generation (Isar only) ──────────────────────────────────────────
+  # build_runner is unpinned so pub can select the release whose build/
+  # analyzer/source_gen versions match isar_community_generator 3.3.2
+  # (build ^4, analyzer >=8, source_gen >=4).
+  build_runner: any
+  isar_community_generator: ^3.3.2
+
+  # ── Testing ──────────────────────────────────────────────────────────────
+  mocktail: ^1.0.4
+  fake_async: ^1.3.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/fonts/
+  # OpenDyslexic + Bookerly-style fonts are declared here once the binary
+  # font files are added to assets/fonts/ (see docs/SETUP.md).

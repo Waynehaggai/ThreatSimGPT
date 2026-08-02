@@ -1,0 +1,85 @@
+name: Lumen CI
+
+# Scoped to the Flutter app in lumen/ so it never runs on ThreatSimGPT changes.
+on:
+  push:
+    branches: ["**"]
+    paths: ["lumen/**", ".github/workflows/lumen-ci.yml"]
+  pull_request:
+    paths: ["lumen/**", ".github/workflows/lumen-ci.yml"]
+
+defaults:
+  run:
+    working-directory: lumen
+
+jobs:
+  analyze-and-test:
+    name: Format · Codegen · Analyze · Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Generate code (Isar / Freezed / JSON / Riverpod)
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Run tests with coverage
+        run: flutter test --coverage
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: lumen-coverage
+          path: lumen/coverage/lcov.info
+          if-no-files-found: ignore
+
+  build-android:
+    name: Build Android (debug, smoke)
+    runs-on: ubuntu-latest
+    needs: analyze-and-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
+      # Split per ABI so each APK carries only one architecture's native code —
+      # far smaller than the universal build.
+      - run: flutter build apk --debug --split-per-abi
+      # Publish only the arm64-v8a APK (covers essentially all modern phones) as
+      # the primary artifact, so the download stays small.
+      - name: Upload debug APK (arm64-v8a)
+        uses: actions/upload-artifact@v4
+        with:
+          name: lumen-debug-apk
+          path: lumen/build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk
+          if-no-files-found: error
+      # The other ABIs (armeabi-v7a / x86_64) are published separately for
+      # older devices and emulators; skip this download unless you need them.
+      - name: Upload debug APKs (other ABIs)
+        uses: actions/upload-artifact@v4
+        with:
+          name: lumen-debug-apk-other-abis
+          path: |
+            lumen/build/app/outputs/flutter-apk/app-armeabi-v7a-debug.apk
+            lumen/build/app/outputs/flutter-apk/app-x86_64-debug.apk
+          if-no-files-found: error
