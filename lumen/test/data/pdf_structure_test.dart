@@ -50,6 +50,24 @@ void main() {
     expect(blocks.single.text, contains('evening'));
   });
 
+  test('splits run-on numbered items glued after punctuation', () {
+    const raw = 'Instructions for the candidate:1.Stand still.2.Hold your '
+        'breath.3.Come up slowly.';
+    final blocks = structurePdfText(raw);
+    final lists = blocks.where((b) => b.type == BlockType.list).toList();
+    expect(lists, hasLength(3));
+    expect(lists[0].text, startsWith('1.'));
+    expect(lists[1].text, startsWith('2.'));
+    expect(lists[2].text, startsWith('3.'));
+  });
+
+  test('leaves ordinary prose and years untouched', () {
+    const raw = 'Chapter 1. The story began in 1990. It was a good year.';
+    final blocks = structurePdfText(raw);
+    // No spurious list items carved out of normal sentences.
+    expect(blocks.every((b) => b.type != BlockType.list), isTrue);
+  });
+
   test('lifts a short ALL-CAPS line as a heading', () {
     const raw = 'THE MARRIAGE COVENANT\n'
         'This chapter opens with a paragraph of\n'

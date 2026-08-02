@@ -151,6 +151,26 @@ void main() {
     expect(result.isFailure, isTrue);
   });
 
+  test('restructureText posts the raw text and returns the repair', () async {
+    late http.Request captured;
+    final service = _service(
+      MockClient((req) async {
+        captured = req;
+        return _text('Clouds to. Lord Himself.');
+      }),
+    );
+
+    final result = await service.restructureText('Cloudsto.LordHimself.');
+
+    expect(result.valueOrNull, 'Clouds to. Lord Himself.');
+    final body = jsonDecode(captured.body) as Map<String, dynamic>;
+    expect(
+      ((body['messages'] as List).first as Map)['content'],
+      'Cloudsto.LordHimself.',
+    );
+    expect(body['model'], 'claude-opus-4-8');
+  });
+
   test('the disabled stub reports isEnabled=false', () {
     final service = AnthropicAiService(
       const AiConfig(baseUrl: 'https://proxy.test', enabled: false),

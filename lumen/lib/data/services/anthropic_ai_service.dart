@@ -210,6 +210,28 @@ class AnthropicAiService implements AiService {
     );
   }
 
+  @override
+  Future<Result<String>> restructureText(String rawText) {
+    return _text(
+      system:
+          'You repair text extracted from a PDF. The extraction has run words, '
+          'headings, and list numbers together with missing spaces and missing '
+          'line breaks. Rewrite the text so it reads correctly:\n'
+          '- Restore missing spaces between run-together words '
+          '(e.g. "cloudsto" -> "clouds to", "LordHimself" -> "Lord Himself").\n'
+          '- Separate paragraphs with a blank line.\n'
+          '- Put each heading on its own line.\n'
+          '- Put each numbered or bulleted list item on its own line, keeping '
+          'its marker.\n'
+          'Do NOT summarize, translate, add, remove, or reword anything. Only '
+          'fix spacing, capitalization of run-together words, and line breaks. '
+          'Return only the corrected text.',
+      user: rawText,
+      maxTokens: 8192,
+      think: false,
+    );
+  }
+
   // ── request helpers ────────────────────────────────────────────────────
 
   /// A prose (text-returning) Messages request.

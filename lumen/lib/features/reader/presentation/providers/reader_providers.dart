@@ -16,6 +16,7 @@ import '../../../../domain/repositories/progress_repository.dart';
 import '../../../../domain/repositories/statistics_repository.dart';
 import '../../../../domain/usecases/reader_usecases.dart';
 import '../../../library/presentation/providers/library_providers.dart';
+import 'document_cleanup_providers.dart';
 import 'ocr_providers.dart';
 import 'sample_content.dart';
 
@@ -49,7 +50,11 @@ final readerContentProvider = FutureProvider.family<BookContent, String>((
 ) async {
   final book = await ref.watch(readerBookProvider(bookId).future);
 
-  // 1. Session OCR cache wins.
+  // 0. AI-cleaned content, if the user ran "Clean up formatting", wins outright.
+  final enhanced = ref.watch(enhancedContentProvider(bookId));
+  if (enhanced != null) return enhanced;
+
+  // 1. Session OCR cache wins next.
   final ocr = ref.watch(ocrContentProvider(bookId));
   if (ocr != null) return ocr;
 

@@ -45,6 +45,12 @@ abstract interface class AiService {
   });
 
   Future<Result<List<Flashcard>>> generateFlashcards(Chapter chapter);
+
+  /// Repairs badly-extracted document text: restores spacing between run-together
+  /// words, separates paragraphs, and puts headings and list items on their own
+  /// lines — **without** summarizing, adding, removing or rewording content.
+  /// Returns cleaned plain text the parser can then structure.
+  Future<Result<String>> restructureText(String rawText);
 }
 
 /// Default no-op implementation so the app runs without any AI backend wired.
@@ -97,4 +103,6 @@ class DisabledAiService implements AiService {
   @override
   Future<Result<List<Flashcard>>> generateFlashcards(Chapter chapter) async =>
       _off();
+  @override
+  Future<Result<String>> restructureText(String rawText) async => _off();
 }

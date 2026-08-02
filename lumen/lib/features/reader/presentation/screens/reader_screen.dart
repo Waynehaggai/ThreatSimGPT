@@ -14,6 +14,7 @@ import '../../../../domain/usecases/reader_usecases.dart';
 import '../../../settings/presentation/providers/settings_providers.dart';
 import '../../../../domain/services/tts_service.dart';
 import '../providers/annotation_providers.dart';
+import '../providers/document_cleanup_providers.dart';
 import '../providers/ocr_providers.dart';
 import '../providers/reader_providers.dart';
 import '../providers/tts_controller.dart';
@@ -398,10 +399,11 @@ class _ReaderSurface extends ConsumerWidget {
           wordCount: content.wordCount,
         );
         return SmartReaderView(
-          // Changing the key on a TOC jump re-lays out at the new fraction.
+          // Changing the key on a TOC jump — or when the content itself is
+          // replaced (e.g. after AI cleanup) — re-lays the view out.
           key: ValueKey(
             'smart-$jumpPercent-${settings.fontSizeSp}'
-            '-${settings.pageNavigation}',
+            '-${settings.pageNavigation}-${identityHashCode(content)}',
           ),
           content: content,
           typography: ReaderTypography(settings, palette),
@@ -493,6 +495,7 @@ class _TopBar extends ConsumerWidget {
               iconColor: palette.text,
               onSelected: (value) {
                 if (value == 'export') _exportNotes(context, controller);
+                if (value == 'cleanup') _cleanupFormatting(context, ref);
                 if (value == 'summarize') _summarizeChapter(context, ref);
                 if (value == 'flashcards') _flashcards(context, ref);
                 if (value == 'ask') context.push(Routes.askPath(bookId));
@@ -502,6 +505,11 @@ class _TopBar extends ConsumerWidget {
                   value: 'export',
                   child: Text('Export notes'),
                 ),
+                if (aiEnabled)
+                  const PopupMenuItem(
+                    value: 'cleanup',
+                    child: Text('Clean up formatting (AI)'),
+                  ),
                 if (aiEnabled)
                   const PopupMenuItem(
                     value: 'summarize',
@@ -539,6 +547,30 @@ class _TopBar extends ConsumerWidget {
       case null:
         break;
     }
+  }
+
+  Future<void> _cleanupFormatting(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final controller =
+        ref.read(documentCleanupControllerProvider(bookId).notifier);
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Text('Cleaning up formatting with AI…'),
+        duration: Duration(seconds: 30),
+      ),
+    );
+    await controller.run();
+    final state = ref.read(documentCleanupControllerProvider(bookId));
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          state.status == CleanupStatus.done
+              ? 'Formatting cleaned up.'
+              : 'Cleanup failed: ${state.error ?? 'unknown error'}',
+        ),
+      ),
+    );
   }
 
   void _summarizeChapter(BuildContext context, WidgetRef ref) {

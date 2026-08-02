@@ -132,6 +132,25 @@ final _listItem = RegExp(
   r'^(\d{1,3}[.)]|[a-z][)]|[ivxlcdm]{1,5}[)]|[-•*▪◦‣·])\s+\S',
 );
 
+/// Breaks list markers that are run together with the preceding sentence onto
+/// their own line — the common case where a PDF encodes "…done.1.Next step" or
+/// "…done.•Next" with no line break. Only fires when the marker directly
+/// follows terminal punctuation ('.', ':', ')', '!', '?'), so ordinary prose
+/// like "Chapter 1. The story" and years like "in 1990." are left untouched.
+String _presplitRunOns(String text) {
+  return text
+      // "…word:1.Next" / "…word.7.After" → own line, with a space after marker.
+      .replaceAllMapped(
+        RegExp(r'([.:)!?])\s*(\d{1,2}[.)])\s*(?=[A-Za-z])'),
+        (m) => '${m[1]}\n${m[2]} ',
+      )
+      // "…word.•Next" → bullet onto its own line.
+      .replaceAllMapped(
+        RegExp(r'([.:)!?])\s*([•▪◦‣])\s*(?=[A-Za-z])'),
+        (m) => '${m[1]}\n${m[2]} ',
+      );
+}
+
 /// Rebuilds readable structure from a PDF page's raw extracted text.
 ///
 /// PDF text extraction emits one line per *visual* line, so a single paragraph
@@ -141,7 +160,7 @@ final _listItem = RegExp(
 /// giving Smart Mode the paragraph structure a reader expects instead of one
 /// flattened wall of text.
 List<StructuredBlock> structurePdfText(String pageText) {
-  final lines = pageText
+  final lines = _presplitRunOns(pageText)
       .split('\n')
       .map((l) => l.replaceAll(RegExp(r'[ \t ]+'), ' ').trimRight())
       .toList();
