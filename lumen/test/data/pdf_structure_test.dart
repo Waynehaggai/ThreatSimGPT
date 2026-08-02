@@ -82,8 +82,8 @@ void main() {
       expect(page, isNot(contains('The Marriage Covenant')));
       expect(page, contains('real content'));
       // The bare page-number line is gone.
-      expect(
-          page.split('\n').any((l) => RegExp(r'^\d+$').hasMatch(l)), isFalse);
+      final lines = page.split('\n');
+      expect(lines.any((l) => RegExp(r'^\d+$').hasMatch(l)), isFalse);
     }
   });
 
