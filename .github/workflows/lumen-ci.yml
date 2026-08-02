@@ -63,14 +63,23 @@ jobs:
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
       # Split per ABI so each APK carries only one architecture's native code —
-      # far smaller than the universal build. arm64-v8a covers essentially all
-      # modern phones; the other splits are published too for older/emulator use.
+      # far smaller than the universal build.
       - run: flutter build apk --debug --split-per-abi
-      # Publish the per-ABI APKs so they can be downloaded from the run and
-      # sideloaded onto an Android device for manual testing.
-      - name: Upload debug APKs (per ABI)
+      # Publish only the arm64-v8a APK (covers essentially all modern phones) as
+      # the primary artifact, so the download stays small.
+      - name: Upload debug APK (arm64-v8a)
         uses: actions/upload-artifact@v4
         with:
           name: lumen-debug-apk
-          path: lumen/build/app/outputs/flutter-apk/app-*-debug.apk
+          path: lumen/build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk
+          if-no-files-found: error
+      # The other ABIs (armeabi-v7a / x86_64) are published separately for
+      # older devices and emulators; skip this download unless you need them.
+      - name: Upload debug APKs (other ABIs)
+        uses: actions/upload-artifact@v4
+        with:
+          name: lumen-debug-apk-other-abis
+          path: |
+            lumen/build/app/outputs/flutter-apk/app-armeabi-v7a-debug.apk
+            lumen/build/app/outputs/flutter-apk/app-x86_64-debug.apk
           if-no-files-found: error
