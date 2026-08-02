@@ -68,6 +68,37 @@ void main() {
     expect(blocks.every((b) => b.type != BlockType.list), isTrue);
   });
 
+  test('strips repeating running headers/footers and page numbers', () {
+    // Same running head + a page number at the foot of every page.
+    final pages = [
+      for (var n = 1; n <= 6; n++)
+        'The Marriage Covenant\n'
+            'Body sentence for page $n that is real content.\n'
+            '$n',
+    ];
+    final cleaned = stripRunningHeadersFooters(pages);
+
+    for (final page in cleaned) {
+      expect(page, isNot(contains('The Marriage Covenant')));
+      expect(page, contains('real content'));
+      // The bare page-number line is gone.
+      expect(
+          page.split('\n').any((l) => RegExp(r'^\d+$').hasMatch(l)), isFalse);
+    }
+  });
+
+  test('does not strip a title that appears only once (not a running head)',
+      () {
+    final pages = [
+      'The Marriage Covenant\nOpening paragraph of the book.',
+      'A completely different second page of prose.',
+      'A third page with more prose and ideas.',
+    ];
+    final cleaned = stripRunningHeadersFooters(pages);
+    // Appears once → not a running head → kept.
+    expect(cleaned.first, contains('The Marriage Covenant'));
+  });
+
   test('lifts a short ALL-CAPS line as a heading', () {
     const raw = 'THE MARRIAGE COVENANT\n'
         'This chapter opens with a paragraph of\n'

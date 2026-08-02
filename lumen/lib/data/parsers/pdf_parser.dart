@@ -68,11 +68,11 @@ class PdfParser implements DocumentParser {
       var offset = 0;
       var wordCount = 0;
 
-      for (var page = 0; page < count; page++) {
-        final text = extractor.extractText(
-          startPageIndex: page,
-          endPageIndex: page,
-        );
+      final pages = [
+        for (var page = 0; page < count; page++)
+          extractor.extractText(startPageIndex: page, endPageIndex: page),
+      ];
+      for (final text in stripRunningHeadersFooters(pages)) {
         for (final block in structurePdfText(text)) {
           blocks.add(
             ContentBlock(
@@ -131,6 +131,69 @@ class StructuredBlock {
 final _listItem = RegExp(
   r'^(\d{1,3}[.)]|[a-z][)]|[ivxlcdm]{1,5}[)]|[-•*▪◦‣·])\s+\S',
 );
+
+// A line that is nothing but a numeric page number: "42", "- 42 -", "42 |".
+// Safe to drop anywhere — prose lines are never bare numbers.
+final _numericPageLine = RegExp(
+  r'^\s*[\[(]?\s*(?:[-–—|]\s*)?\d{1,4}\s*(?:[-–—|]\s*)?[\])]?\s*$',
+);
+
+// A line that is only roman numerals ("xiv"). Only trusted as a page number at
+// a page edge, since words like "civil" or "did" are also roman-numeral-only.
+final _romanPageLine = RegExp(r'^\s*[ivxlcdm]{1,7}\s*$', caseSensitive: false);
+
+/// Normalises a candidate header/footer line for repeat-detection: drops digits
+/// (page numbers vary) and punctuation so "The Covenant   45" and
+/// "46   The Covenant" collapse to the same key.
+String _headerKey(String s) => s
+    .replaceAll(RegExp(r'[0-9]'), '')
+    .replaceAll(RegExp(r'[^A-Za-z]'), '')
+    .toLowerCase();
+
+/// Removes running headers / footers and page numbers that PDF extraction
+/// pulls in as body text.
+///
+/// A line that recurs at the top or bottom edge of many pages is a running
+/// head/foot (book or chapter title, author), so those edge occurrences are
+/// dropped. Lines that are purely a page number are dropped wherever they
+/// appear. Everything else — the actual prose — is untouched.
+List<String> stripRunningHeadersFooters(List<String> pages) {
+  final perPage = [
+    for (final p in pages)
+      p.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty).toList(),
+  ];
+
+  // Count how often each normalised edge line (first or last of a page) recurs.
+  final freq = <String, int>{};
+  for (final lines in perPage) {
+    if (lines.isEmpty) continue;
+    final edges = <String>{lines.first, lines.last};
+    for (final e in edges) {
+      final key = _headerKey(e);
+      if (key.length >= 3) freq[key] = (freq[key] ?? 0) + 1;
+    }
+  }
+  final threshold = math.max(3, (pages.length * 0.3).round());
+  final repeating = {
+    for (final e in freq.entries)
+      if (e.value >= threshold) e.key,
+  };
+
+  return [
+    for (final lines in perPage)
+      [
+        for (var i = 0; i < lines.length; i++)
+          if (!_isChrome(lines[i], i, lines.length, repeating)) lines[i],
+      ].join('\n'),
+  ];
+}
+
+bool _isChrome(String line, int i, int total, Set<String> repeating) {
+  if (_numericPageLine.hasMatch(line)) return true; // page number anywhere
+  final atEdge = i == 0 || i == total - 1;
+  if (!atEdge) return false;
+  return _romanPageLine.hasMatch(line) || repeating.contains(_headerKey(line));
+}
 
 /// Breaks list markers that are run together with the preceding sentence onto
 /// their own line — the common case where a PDF encodes "…done.1.Next step" or

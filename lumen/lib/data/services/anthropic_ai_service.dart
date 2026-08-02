@@ -223,6 +223,9 @@ class AnthropicAiService implements AiService {
           '- Put each heading on its own line.\n'
           '- Put each numbered or bulleted list item on its own line, keeping '
           'its marker.\n'
+          '- Remove page numbers and repeated running headers or footers (book '
+          'or chapter titles that recur on every page) that are not part of the '
+          'prose.\n'
           'Do NOT summarize, translate, add, remove, or reword anything. Only '
           'fix spacing, capitalization of run-together words, and line breaks. '
           'Return only the corrected text.',
